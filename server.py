@@ -18,10 +18,10 @@ async def websocket_endpoint(websocket: WebSocket):
 
 def checkCommand(signal):
     if "track" in signal:
-        track_name = signal.split(":")[1].trim()
+        track_name = signal.split("~")[1].strip()
         track = np.load(f"{track_name}.npy")
         return  [(point[0], 0, point[1]) for point in track]
     elif "eval" in signal:
-        command = signal.split(':')[1].trim()
+        command = signal.split('~')[1].strip()
         print(command)
-        return {"x": 0.1, "y":0.1}
+        return {"x": 0.1, "y":0.1} # X: -1,1 Y:-1,1

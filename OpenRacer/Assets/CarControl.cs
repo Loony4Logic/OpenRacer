@@ -80,4 +80,14 @@ public class CarControl : MonoBehaviour
             }
         }
     }
+
+    private void LateUpdate()
+    {
+        Setup setup = GetComponent<Setup>();
+        StateProcessor stateProcessor = setup.stateProcessor;
+        RawState rawState = new RawState();
+        rawState.x = gameObject.transform.position.x;
+        rawState.y = gameObject.transform.position.z;
+        stateProcessor.sendState(rawState);
+    }
 }
