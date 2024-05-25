@@ -4,16 +4,16 @@ using UnityEngine;
 
 public class Setup : MonoBehaviour
 {
-    public ServerConnector serverConnector;
-    public StateProcessor stateProcessor;
+    public InteractionManager interactionManager;
+    ServerConnector serverConnector;
 
     // Start is called before the first frame update
-    void Start()
+    async void Start()
     {
         serverConnector = new ServerConnector();
-        serverConnector.Start();
+        await serverConnector.Start();
 
-        stateProcessor = new StateProcessor(serverConnector);
+        interactionManager = new InteractionManager(serverConnector, GetComponent<CarControl>());
 
     }
 

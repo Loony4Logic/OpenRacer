@@ -3,6 +3,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System;
+using System.Threading.Tasks;
 
 public class ServerConnector 
 {
@@ -11,8 +12,7 @@ public class ServerConnector
     Uri serverUri = new Uri("ws://localhost:8000/ws"); // Replace with your WebSocket server URI
     CancellationTokenSource cts = new CancellationTokenSource();
 
-    // Start is called before the first frame update
-    async public void Start()
+    async public Task<bool> Start()
     {
         await webSocket.ConnectAsync(serverUri, cts.Token);
         Debug.Log("Connected to the server");
@@ -21,13 +21,15 @@ public class ServerConnector
         string messageToSend = "track~Albert";
         ArraySegment<byte> bytesToSend = new ArraySegment<byte>(Encoding.UTF8.GetBytes(messageToSend));
         await webSocket.SendAsync(bytesToSend, WebSocketMessageType.Text, true, cts.Token);
-        Debug.Log($"Sent: {messageToSend}");
+        // Debug.Log($"Sent: {messageToSend}");
 
         // Receive a message from the server
         ArraySegment<byte> bytesReceived = new ArraySegment<byte>(new byte[1024 * 20]);
         WebSocketReceiveResult result = await webSocket.ReceiveAsync(bytesReceived, cts.Token);
         string messageReceived = Encoding.UTF8.GetString(bytesReceived.Array, 0, result.Count);
-        Debug.Log($"Received: {messageReceived}");
+        // Debug.Log($"Received: {messageReceived}");
+
+        return true;
     }
 
     public async void OnDestroy()
@@ -40,13 +42,10 @@ public class ServerConnector
     }
 
 
-    public async void sendToWebsocket(string msg)
+    public async Task<String> sendToWebsocket(string msg)
     {
         // Send a message to the server
         ArraySegment<byte> bytesToSend = new ArraySegment<byte>(Encoding.UTF8.GetBytes(msg));
-        Debug.Log(bytesToSend);
-        Debug.Log(WebSocketMessageType.Text); 
-        Debug.Log(cts.Token);
         await webSocket.SendAsync(bytesToSend, WebSocketMessageType.Text, true, cts.Token);
         Debug.Log($"Sent: {msg}");
 
@@ -54,7 +53,7 @@ public class ServerConnector
         ArraySegment<byte> bytesReceived = new ArraySegment<byte>(new byte[1024 * 20]);
         WebSocketReceiveResult result = await webSocket.ReceiveAsync(bytesReceived, cts.Token);
         string messageReceived = Encoding.UTF8.GetString(bytesReceived.Array, 0, result.Count);
-        Debug.Log($"Received: {messageReceived}");
-
+        // Debug.Log($"Received: {messageReceived}");
+        return messageReceived;
     }
 }

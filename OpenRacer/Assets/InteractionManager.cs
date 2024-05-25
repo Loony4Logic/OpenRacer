@@ -1,6 +1,8 @@
-using Mono.Cecil.Cil;
 
-struct point
+using System.Threading.Tasks;
+using UnityEngine;
+
+public struct Action
 {
     public float x;
     public float y;
@@ -36,7 +38,7 @@ public struct ProcessedState
 
     public override string ToString()
     {
-        return $"{{'x': {x}, 'y':{y}}}";
+        return JsonUtility.ToJson(this);
     }
 
 }
@@ -44,16 +46,10 @@ public struct ProcessedState
 
 public class StateProcessor
 {
-    ServerConnector serverConnector;
-    public StateProcessor(ServerConnector serverConnector)
-    {
-        this.serverConnector = serverConnector;
-    }
-
-    public void sendState(RawState rawState)
+    public string sendState(RawState rawState)
     {
         ProcessedState processedState = processState(rawState);
-        serverConnector.sendToWebsocket($"eval~{processedState.ToString()}");
+        return $"eval~{processedState.ToString()}";
     }
 
     public ProcessedState processState(RawState rawState)
@@ -67,6 +63,36 @@ public class StateProcessor
 }
 
 public class ActionProcessor 
-{ 
+{
+    public Action processAction(string command)
+    {
+        Action action = JsonUtility.FromJson<Action>(command);
+        return action;
+    }
+
+}
+
+public class InteractionManager
+{
+    ServerConnector serverConnector;
+    CarControl carControl;
+    StateProcessor stateProcessor;
+    ActionProcessor actionProcessor;
+
+    public InteractionManager(ServerConnector serverConnector, CarControl carControl) 
+    { 
+        this.serverConnector = serverConnector;
+        this.carControl = carControl;
+        stateProcessor = new StateProcessor();
+        actionProcessor = new ActionProcessor();
+    }
+
+    public async Task<Action> interact(RawState rawState)
+    {
+        string messageForSocket = stateProcessor.sendState(rawState);
+        string command = await serverConnector.sendToWebsocket(messageForSocket);
+        Action action = actionProcessor.processAction(command);
+        return action;
+    }
 
 }

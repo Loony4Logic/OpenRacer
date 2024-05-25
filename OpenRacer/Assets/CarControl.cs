@@ -26,12 +26,19 @@ public class CarControl : MonoBehaviour
         wheels = GetComponentsInChildren<WheelControl>();
     }
 
-    // Update is called once per frame
-    void Update()
+    public async void Update()
     {
+        Setup setup = GetComponent<Setup>();
+        InteractionManager interactionManager = setup.interactionManager;
+        RawState rawState = new RawState();
+        rawState.x = gameObject.transform.position.x;
+        rawState.y = gameObject.transform.position.z;
+        Action action = new Action();
+        if (interactionManager != null)
+            action = await interactionManager.interact(rawState);
 
-        float vInput = Input.GetAxis("Vertical");
-        float hInput = Input.GetAxis("Horizontal");
+        float vInput = action.y;
+        float hInput = action.x;
 
         // Calculate current speed in relation to the forward direction of the car
         // (this returns a negative number when traveling backwards)
@@ -79,15 +86,5 @@ public class CarControl : MonoBehaviour
                 wheel.WheelCollider.motorTorque = 0;
             }
         }
-    }
-
-    private void LateUpdate()
-    {
-        Setup setup = GetComponent<Setup>();
-        StateProcessor stateProcessor = setup.stateProcessor;
-        RawState rawState = new RawState();
-        rawState.x = gameObject.transform.position.x;
-        rawState.y = gameObject.transform.position.z;
-        stateProcessor.sendState(rawState);
     }
 }

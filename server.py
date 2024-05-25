@@ -1,5 +1,6 @@
 from fastapi import FastAPI, WebSocket
 import numpy as np
+import json
 
 app = FastAPI()
 
@@ -13,15 +14,13 @@ async def websocket_endpoint(websocket: WebSocket):
     while True:
         signal = await websocket.receive_text()
         res = checkCommand(signal)
-        print(len(res))
-        await websocket.send_text(str(res))
+        await websocket.send_text(json.dumps(res))
 
 def checkCommand(signal):
-    if "track" in signal:
+    if "track~" in signal:
         track_name = signal.split("~")[1].strip()
         track = np.load(f"{track_name}.npy")
         return  [(point[0], 0, point[1]) for point in track]
-    elif "eval" in signal:
+    elif "eval~" in signal:
         command = signal.split('~')[1].strip()
-        print(command)
-        return {"x": 0.1, "y":0.1} # X: -1,1 Y:-1,1
+        return {"x": 1, "y":1}
