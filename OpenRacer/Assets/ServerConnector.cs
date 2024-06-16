@@ -44,10 +44,11 @@ public class ServerConnector
 
     public async Task<String> sendToWebsocket(string msg)
     {
+
         // Send a message to the server
         ArraySegment<byte> bytesToSend = new ArraySegment<byte>(Encoding.UTF8.GetBytes(msg));
         await webSocket.SendAsync(bytesToSend, WebSocketMessageType.Text, true, cts.Token);
-        Debug.Log($"Sent: {msg}");
+        // Debug.Log($"Sent: {msg}");
 
         // Receive a message from the server
         ArraySegment<byte> bytesReceived = new ArraySegment<byte>(new byte[1024 * 20]);

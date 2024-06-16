@@ -380,16 +380,39 @@ public class TrackGenerator : MonoBehaviour
     [Range(1f, 50f)]
     float _scale = 15f;
 
+    RoadBuilder builder;
+
+    InteractionManager interactionManager;
+
+    public void setInteractionManager(InteractionManager interactionManager)
+    {
+        this.interactionManager = interactionManager;
+    }
+
     // Start is called before the first frame update
     void Start()
     {
-        RoadBuilder builder = GetComponent<RoadBuilder>();
-        builder.setPath(verts, _scale);
+        //generate();
     }
 
     // Update is called once per frame
     void Update()
     {
 
+    }
+
+    public void generate()
+    {
+        if(interactionManager != null)
+        {
+
+            builder = GetComponent<RoadBuilder>();
+            builder.setPath(verts, _scale);
+            interactionManager.setWaypoints(builder.getCenterLine());
+        }
+        else
+        {
+            Debug.Log("The hell is here");
+        }
     }
 }

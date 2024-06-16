@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.PlasticSCM.Editor.WebApi;
 using UnityEngine;
 
 public class CarControl : MonoBehaviour
@@ -10,6 +11,7 @@ public class CarControl : MonoBehaviour
     public float steeringRange = 30;
     public float steeringRangeAtMaxSpeed = 10;
     public float centreOfGravityOffset = -1f;
+    public bool ManualDrive = false;
 
     WheelControl[] wheels;
     Rigidbody rigidBody;
@@ -26,20 +28,37 @@ public class CarControl : MonoBehaviour
         wheels = GetComponentsInChildren<WheelControl>();
     }
 
-    public async void Update()
+    public RawState getRawState()
     {
-        Setup setup = GetComponent<Setup>();
-        InteractionManager interactionManager = setup.interactionManager;
+        // Calculate current speed in relation to the forward direction of the car
+        // (this returns a negative number when traveling backwards)
+        float forwardSpeed = Vector3.Dot(transform.forward, rigidBody.velocity);
+
+
+        // Calculate how close the car is to top speed
+        // as a number from zero to one
+        float speedFactor = Mathf.InverseLerp(0, maxSpeed, forwardSpeed);
+
+        // Use that to calculate how much torque is available 
+        // (zero torque at top speed)
+        float currentMotorTorque = Mathf.Lerp(motorTorque, 0, speedFactor);
+
+        // …and to calculate how much to steer 
+        // (the car steers more gently at top speed)
+        float currentSteerRange = Mathf.Lerp(steeringRange, steeringRangeAtMaxSpeed, speedFactor);
+
         RawState rawState = new RawState();
         rawState.x = gameObject.transform.position.x;
         rawState.y = gameObject.transform.position.z;
-        Action action = new Action();
-        if (interactionManager != null)
-            action = await interactionManager.interact(rawState);
+        rawState.speed = rigidBody.velocity.magnitude;
+        rawState.steering_angle = wheels[0].WheelCollider.steerAngle;
+        rawState.is_reversed = forwardSpeed < 0;
+        rawState.all_wheels_on_track = true;
+        return rawState;
+    }
 
-        float vInput = action.y;
-        float hInput = action.x;
-
+    public void move(float vInput,  float hInput)
+    { 
         // Calculate current speed in relation to the forward direction of the car
         // (this returns a negative number when traveling backwards)
         float forwardSpeed = Vector3.Dot(transform.forward, rigidBody.velocity);

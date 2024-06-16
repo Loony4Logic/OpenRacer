@@ -41,6 +41,7 @@ public class RoadBuilder : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        _splineContainer = gameObject.GetComponent<SplineContainer>();
         if (GetComponent<MeshCollider>() == null) gameObject.AddComponent<MeshCollider>();
         if (GetComponent<MeshFilter>() == null) gameObject.AddComponent<MeshFilter>();
         if (GetComponent<MeshRenderer>() == null) gameObject.AddComponent<MeshRenderer>();
@@ -56,11 +57,11 @@ public class RoadBuilder : MonoBehaviour
 
     public void setPath(List<Vector3> points, float scale= 1f)
     {
-        _splineContainer.Spline.Clear();
+        _splineContainer.Spline.Clear();    
         for (int i = 0; i < points.Count; i++)
             _splineContainer.Spline.Add(new BezierKnot(points[i]));
         _splineContainer.Spline.Closed = true;
-        _splineContainer.Spline.SetTangentMode(new SplineRange(0, points.Count), TangentMode.AutoSmooth);
+        //_splineContainer.Spline.SetTangentMode(new SplineRange(0, _splineContainer.Spline.Count), TangentMode.AutoSmooth);
         getVerts();
         buildMesh();
         GetComponent<Transform>().localScale = new Vector3(scale, 1, scale);
@@ -84,7 +85,14 @@ public class RoadBuilder : MonoBehaviour
             _vertsP1 .Add(p1);
             _vertsP2 .Add(p2);
         }
+    }
 
+    public List<Vector3> getCenterLine()
+    {
+        List<Vector3> centerLine = new List<Vector3>();
+        for (int i = 0; i < _splineContainer.Spline.Count; i++)
+            centerLine.Add(_splineContainer.Spline[i].Position);
+        return centerLine;
     }
 
     private void buildMesh()
