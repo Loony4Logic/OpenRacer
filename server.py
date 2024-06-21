@@ -20,7 +20,7 @@ async def checkCommand(signal):
     if "track~" in signal:
         track_name = signal.split("~")[1].strip()
         track = np.load(f"{track_name}.npy")
-        return  [(point[0], 0, point[1]) for point in track]
+        return  {"track": [{"x":point[0], "y": 0, "z":point[1]} for point in track[:-1]]}
     elif "eval~" in signal:
         command = json.loads(f"[{signal.split('~')[1].strip()}]")
         return {"actions": [{"x": 1, "y":1} for i in range(len(command))]}

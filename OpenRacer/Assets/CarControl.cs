@@ -12,6 +12,7 @@ public class CarControl : MonoBehaviour
     public float steeringRangeAtMaxSpeed = 10;
     public float centreOfGravityOffset = -1f;
     public bool ManualDrive = false;
+    public bool all_wheels_on_track = true;
 
     WheelControl[] wheels;
     Rigidbody rigidBody;
@@ -53,7 +54,7 @@ public class CarControl : MonoBehaviour
         rawState.speed = rigidBody.velocity.magnitude;
         rawState.steering_angle = wheels[0].WheelCollider.steerAngle;
         rawState.is_reversed = forwardSpeed < 0;
-        rawState.all_wheels_on_track = true;
+        rawState.all_wheels_on_track = all_wheels_on_track;
         return rawState;
     }
 

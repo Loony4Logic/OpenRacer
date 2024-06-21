@@ -1,24 +1,23 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class UIInteraction : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    [SerializeField]
+    public TMP_InputField trackInput;
 
-    // Update is called once per frame
-    void Update()
+    public InteractionManager interactionManager;
+    public TrackGenerator trackGenerator;
+    //TODO: get track from server and generate track
+    public async void SendUpdate()
     {
-        
-    }
-    public void SendUpdate()
-    {
-        Debug.Log("WEll Hello Hello");
-
+        string trackName = trackInput.text;
+        Debug.Log($"Lets Race on: {trackName}");
+        if (interactionManager == null) return;
+        Track track = await interactionManager.GetTrackVerts( trackName );
+        trackGenerator.generate(track.track);
     }
 
 }

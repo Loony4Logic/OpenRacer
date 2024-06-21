@@ -9,6 +9,7 @@ public class Setup : MonoBehaviour
     public InteractionManager interactionManager;
     public CarManager carManager;
     public GameObject track;
+    public UIInteraction uiInteraction;
     ServerConnector serverConnector;
 
     // Start is called before the first frame update
@@ -17,23 +18,22 @@ public class Setup : MonoBehaviour
         serverConnector = new ServerConnector();
         await serverConnector.Start();
 
+
         interactionManager = new InteractionManager(serverConnector);
+
+        TrackGenerator trackGenerator = track.GetComponent<TrackGenerator>();
+        trackGenerator.setInteractionManager(interactionManager);
         
+        uiInteraction.interactionManager = interactionManager;
+        uiInteraction.trackGenerator = trackGenerator;
+        // track.GetComponent<TrackGenerator>().generate();
+
         carManager = gameObject.GetComponent<CarManager>();
         carManager.interactionManager = interactionManager;
-
-        track.GetComponent<TrackGenerator>().setInteractionManager(interactionManager);
-        track.GetComponent<TrackGenerator>().generate();
     }
 
     private void OnDestroy()
     {
         serverConnector.OnDestroy();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }

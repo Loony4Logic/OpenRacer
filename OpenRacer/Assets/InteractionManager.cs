@@ -74,6 +74,11 @@ public struct ProcessedState
 
 }
 
+public struct Track
+{
+    public List<Vector3> track;
+}
+
 
 public class StateProcessor
 {
@@ -147,6 +152,15 @@ public class InteractionManager
     public void setWaypoints(List<Vector3> waypoints)
     {
         stateProcessor.waypoints = waypoints;
+    }
+
+    public async Task<Track> GetTrackVerts(string trackName) 
+    {
+        string messageToSend = "track~" + trackName;
+        string trackJsonString = await serverConnector.sendToWebsocket(messageToSend);
+        Debug.Log(trackJsonString);
+        Track track = JsonUtility.FromJson<Track>(trackJsonString);
+        return track;
     }
 
     public async Task<Action> interact(RawState rawState)

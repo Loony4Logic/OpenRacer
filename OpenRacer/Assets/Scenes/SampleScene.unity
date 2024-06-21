@@ -301,6 +301,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09dfd79b444a0534391fbb2cf4c0f62b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  trackInput: {fileID: 1404131593}
+  trackGenerator: {fileID: 0}
 --- !u!1 &73168609
 GameObject:
   m_ObjectHideFlags: 0
@@ -1908,7 +1910,7 @@ Transform:
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalPosition: {x: -75.9, y: 11.5, z: 62.9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1946,6 +1948,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   carManager: {fileID: 0}
   track: {fileID: 789277846}
+  uiInteraction: {fileID: 72533536}
 --- !u!4 &966576891
 Transform:
   m_ObjectHideFlags: 0
@@ -1975,7 +1978,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   batchSize: 2
   training: 0
-  ManualDrive: 0
+  ManualDrive: 1
   carPrefab: {fileID: 4612940078991098402, guid: 640c1b56f40544b478992189863110f4, type: 3}
   cars: []
   currentCar: 0
@@ -2205,8 +2208,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -113, y: -57.5}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchoredPosition: {x: -162.9, y: -57.5}
+  m_SizeDelta: {x: 149.8, y: 50}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &1155245772
 MonoBehaviour:
@@ -2291,7 +2294,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_margin: {x: 0, y: 0, z: 0.986084, w: 11.855469}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -2733,8 +2736,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -113, y: -23.5}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchoredPosition: {x: -164.4, y: -23.5}
+  m_SizeDelta: {x: 147.9, y: 50}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &1532251810
 MonoBehaviour:
@@ -2821,7 +2824,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_margin: {x: 0, y: 0, z: 0.48571777, w: 16.301758}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0

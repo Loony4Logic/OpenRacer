@@ -28,7 +28,7 @@ public class TrackGenerator : MonoBehaviour
 
     };
     */
-    List<Vector3> verts = new List<Vector3>
+    /*List<Vector3> verts = new List<Vector3>
     {
         new Vector3(-5.10f, 0, 6.10f),
         new Vector3(-4.95f, 0, 6.10f),
@@ -375,7 +375,8 @@ public class TrackGenerator : MonoBehaviour
         new Vector3(-5.25f, 0, 6.10f),
         new Vector3(-5.10f, 0, 6.10f),
     };
-
+*/
+    
     [SerializeField]
     [Range(1f, 50f)]
     float _scale = 15f;
@@ -389,19 +390,7 @@ public class TrackGenerator : MonoBehaviour
         this.interactionManager = interactionManager;
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        //generate();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
-    public void generate()
+    public void generate(List<Vector3> verts)
     {
         if(interactionManager != null)
         {
@@ -414,5 +403,10 @@ public class TrackGenerator : MonoBehaviour
         {
             Debug.Log("The hell is here");
         }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        other.GetComponentInParent<CarControl>().all_wheels_on_track = false;
     }
 }

@@ -1,8 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.XR;
 
 public class CarManager : MonoBehaviour
 {
@@ -35,23 +32,23 @@ public class CarManager : MonoBehaviour
     [SerializeField]
     float t = 0.005f;
 
+    bool _carSetupReady = false;
 
-    // Start is called before the first frame update
-    void Start()
+    public void Setup(Vector3 startpoint)
     {
         for(int i = 0; i < batchSize; i++)
         {
-            cars.Add(Instantiate(carPrefab, new Vector3(0,2,0), Quaternion.identity));
+            cars.Add(Instantiate(carPrefab, startpoint, Quaternion.identity));
         }
     }
 
     // Update is called once per frame
     async void FixedUpdate()
     {
-        if(currentStep != respondedStep || ManualDrive || interactionManager == null)
+        if(currentStep != respondedStep || ManualDrive || interactionManager == null || !_carSetupReady)
             return;
         List<RawState> rawStates = new List<RawState>();
-        List<Action> actions = new List<Action>();
+        List<Action> actions;
         currentStep++;
         for (int i = 0;i < batchSize; i++)
         {

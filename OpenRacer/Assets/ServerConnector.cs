@@ -17,17 +17,6 @@ public class ServerConnector
         await webSocket.ConnectAsync(serverUri, cts.Token);
         Debug.Log("Connected to the server");
 
-        // Send a message to the server
-        string messageToSend = "track~Albert";
-        ArraySegment<byte> bytesToSend = new ArraySegment<byte>(Encoding.UTF8.GetBytes(messageToSend));
-        await webSocket.SendAsync(bytesToSend, WebSocketMessageType.Text, true, cts.Token);
-        // Debug.Log($"Sent: {messageToSend}");
-
-        // Receive a message from the server
-        ArraySegment<byte> bytesReceived = new ArraySegment<byte>(new byte[1024 * 20]);
-        WebSocketReceiveResult result = await webSocket.ReceiveAsync(bytesReceived, cts.Token);
-        string messageReceived = Encoding.UTF8.GetString(bytesReceived.Array, 0, result.Count);
-        // Debug.Log($"Received: {messageReceived}");
 
         return true;
     }
@@ -41,17 +30,17 @@ public class ServerConnector
         }
     }
 
-
-    public async Task<String> sendToWebsocket(string msg)
+    public async Task<String> sendToWebsocket(string messageToSend)
     {
+        if (string.IsNullOrEmpty(messageToSend)) return null;
 
         // Send a message to the server
-        ArraySegment<byte> bytesToSend = new ArraySegment<byte>(Encoding.UTF8.GetBytes(msg));
+        ArraySegment<byte> bytesToSend = new ArraySegment<byte>(Encoding.UTF8.GetBytes(messageToSend));
         await webSocket.SendAsync(bytesToSend, WebSocketMessageType.Text, true, cts.Token);
-        // Debug.Log($"Sent: {msg}");
+        // Debug.Log($"Sent: {messageToSend}");
 
         // Receive a message from the server
-        ArraySegment<byte> bytesReceived = new ArraySegment<byte>(new byte[1024 * 20]);
+        ArraySegment<byte> bytesReceived = new ArraySegment<byte>(new byte[1024 * 50]);
         WebSocketReceiveResult result = await webSocket.ReceiveAsync(bytesReceived, cts.Token);
         string messageReceived = Encoding.UTF8.GetString(bytesReceived.Array, 0, result.Count);
         // Debug.Log($"Received: {messageReceived}");

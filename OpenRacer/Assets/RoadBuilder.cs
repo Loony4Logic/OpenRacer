@@ -74,8 +74,8 @@ public class RoadBuilder : MonoBehaviour
 
         float steps = 1f / (float)resolution;
 
-        for(int  i = 0; i < resolution; i++) {
-            float t = steps * i;
+        for(int  i = 0; i <= resolution; i++) {
+            float t = steps * i+0.0000001f;
             _splineContainer.Evaluate(_splineIndex, t, out position, out forward, out upVector);
 
             float3 right = Vector3.Cross(forward, upVector).normalized;
