@@ -10,6 +10,7 @@ public class UIInteraction : MonoBehaviour
 
     public InteractionManager interactionManager;
     public TrackGenerator trackGenerator;
+    public CarManager carManager;
     //TODO: get track from server and generate track
     public async void SendUpdate()
     {
@@ -18,6 +19,7 @@ public class UIInteraction : MonoBehaviour
         if (interactionManager == null) return;
         Track track = await interactionManager.GetTrackVerts( trackName );
         trackGenerator.generate(track.track);
+        carManager.Setup(trackGenerator.centerLine[trackGenerator.centerLine.Count-3] + new Vector3(0, 2f, 0));
     }
 
 }

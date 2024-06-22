@@ -223,7 +223,7 @@ Transform:
   m_GameObject: {fileID: 21641339}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.7559009, y: -0.01, z: 2.0165067}
+  m_LocalPosition: {x: 0, y: -0.51, z: 0}
   m_LocalScale: {x: 500, y: 1, z: 500}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -303,6 +303,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   trackInput: {fileID: 1404131593}
   trackGenerator: {fileID: 0}
+  carManager: {fileID: 0}
 --- !u!1 &73168609
 GameObject:
   m_ObjectHideFlags: 0
@@ -1074,7 +1075,7 @@ GameObject:
   - component: {fileID: 789277854}
   - component: {fileID: 789277858}
   m_Layer: 0
-  m_Name: Track
+  m_Name: track
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1551,7 +1552,7 @@ Transform:
   m_GameObject: {fileID: 789277846}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.4, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1669,6 +1670,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _scale: 15
+  _gameObject: {fileID: 0}
+  centerLine: []
+  endLineRight: []
+  endLineLeft: []
 --- !u!1 &815127264
 GameObject:
   m_ObjectHideFlags: 0
@@ -1978,7 +1983,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   batchSize: 2
   training: 0
-  ManualDrive: 1
+  ManualDrive: 0
   carPrefab: {fileID: 4612940078991098402, guid: 640c1b56f40544b478992189863110f4, type: 3}
   cars: []
   currentCar: 0

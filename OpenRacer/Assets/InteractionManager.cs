@@ -158,7 +158,6 @@ public class InteractionManager
     {
         string messageToSend = "track~" + trackName;
         string trackJsonString = await serverConnector.sendToWebsocket(messageToSend);
-        Debug.Log(trackJsonString);
         Track track = JsonUtility.FromJson<Track>(trackJsonString);
         return track;
     }

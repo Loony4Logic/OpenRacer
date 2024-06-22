@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.ConstrainedExecution;
 using UnityEngine;
 
 public class TrackGenerator : MonoBehaviour
@@ -381,6 +383,12 @@ public class TrackGenerator : MonoBehaviour
     [Range(1f, 50f)]
     float _scale = 15f;
 
+    [SerializeField]
+    GameObject _gameObject;
+
+    public List<Vector3> centerLine;
+    public List<Vector3> endLineRight, endLineLeft;
+
     RoadBuilder builder;
 
     InteractionManager interactionManager;
@@ -397,7 +405,19 @@ public class TrackGenerator : MonoBehaviour
 
             builder = GetComponent<RoadBuilder>();
             builder.setPath(verts, _scale);
-            interactionManager.setWaypoints(builder.getCenterLine());
+            Mesh trackMesh = GetComponent<MeshFilter>().mesh;
+            Vector3 localScale = gameObject.transform.localScale;
+            for (int i = 0; i < trackMesh.vertices.Length; i++)
+            {
+                if (i % 2 == 0) endLineRight.Add(Vector3.Scale(localScale, trackMesh.vertices[i]));
+                else
+                {
+                    endLineLeft.Add(Vector3.Scale(localScale, trackMesh.vertices[i]));
+                    centerLine.Add((endLineLeft.Last()+ endLineRight.Last())*0.5f);
+                }
+            }
+            // TODO: use edge line for creating curbs
+            interactionManager.setWaypoints(centerLine);
         }
         else
         {

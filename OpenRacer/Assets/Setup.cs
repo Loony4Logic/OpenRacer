@@ -18,18 +18,17 @@ public class Setup : MonoBehaviour
         serverConnector = new ServerConnector();
         await serverConnector.Start();
 
-
         interactionManager = new InteractionManager(serverConnector);
 
         TrackGenerator trackGenerator = track.GetComponent<TrackGenerator>();
         trackGenerator.setInteractionManager(interactionManager);
         
-        uiInteraction.interactionManager = interactionManager;
-        uiInteraction.trackGenerator = trackGenerator;
-        // track.GetComponent<TrackGenerator>().generate();
-
         carManager = gameObject.GetComponent<CarManager>();
         carManager.interactionManager = interactionManager;
+
+        uiInteraction.interactionManager = interactionManager;
+        uiInteraction.trackGenerator = trackGenerator;
+        uiInteraction.carManager = carManager;
     }
 
     private void OnDestroy()

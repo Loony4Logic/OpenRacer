@@ -40,6 +40,7 @@ public class CarManager : MonoBehaviour
         {
             cars.Add(Instantiate(carPrefab, startpoint, Quaternion.identity));
         }
+        _carSetupReady=true;
     }
 
     // Update is called once per frame
