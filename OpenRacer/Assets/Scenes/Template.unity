@@ -1097,7 +1097,7 @@ MonoBehaviour:
   _splineIndex: 0
   _width: 0.5
   resolution: 300
-  _material: {fileID: 2100000, guid: 32c854f31e075a341a8af7f4df23c708, type: 2}
+  _material: {fileID: 2100000, guid: 073935a5581969a4aa6193fa18aeffa3, type: 2}
 --- !u!114 &789277852
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1605,7 +1605,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 32c854f31e075a341a8af7f4df23c708, type: 2}
+  - {fileID: 2100000, guid: 073935a5581969a4aa6193fa18aeffa3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1981,7 +1981,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f5ff646c72306340a84a221b2036e32, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  batchSize: 2
+  batchSize: 1
   training: 0
   ManualDrive: 0
   carPrefab: {fileID: 4612940078991098402, guid: 640c1b56f40544b478992189863110f4, type: 3}

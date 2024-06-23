@@ -1,6 +1,7 @@
 from fastapi import FastAPI, WebSocket
 import numpy as np
 import json
+import random
 
 app = FastAPI()
 
@@ -20,7 +21,8 @@ async def checkCommand(signal):
     if "track~" in signal:
         track_name = signal.split("~")[1].strip()
         track = np.load(f"{track_name}.npy")
-        return  {"track": [{"x":point[0], "y": 0, "z":point[1]} for point in track[:-1]]}
+        trackVert = [{"x":point[0], "y": 0, "z":point[1]} for point in track[:-1]]
+        return  {"track": trackVert}
     elif "eval~" in signal:
         command = json.loads(f"[{signal.split('~')[1].strip()}]")
-        return {"actions": [{"x": 1, "y":1} for i in range(len(command))]}
+        return {"actions": [{"x": random.randrange(-100, 100)/100, "y":random.randrange(-2, 5)/5} for i in range(len(command))]}

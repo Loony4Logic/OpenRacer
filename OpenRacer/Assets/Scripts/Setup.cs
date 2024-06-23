@@ -21,7 +21,6 @@ public class Setup : MonoBehaviour
         interactionManager = new InteractionManager(serverConnector);
 
         TrackGenerator trackGenerator = track.GetComponent<TrackGenerator>();
-        trackGenerator.setInteractionManager(interactionManager);
         
         carManager = gameObject.GetComponent<CarManager>();
         carManager.interactionManager = interactionManager;

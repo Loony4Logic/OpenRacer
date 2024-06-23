@@ -38,6 +38,7 @@ public struct RawState
     public bool is_reversed;                    // flag to indicate if the agent is driving clockwise (True) or counter clockwise (False).
     public float speed;                         // agent's speed in meters per second (m/s)
     public float steering_angle;                // agent's steering angle in degrees
+    public int[] closest_waypoints;             // indices of the two nearest waypoints.
 }
 
 public struct ProcessedState
@@ -65,6 +66,7 @@ public struct ProcessedState
         this.is_reversed = state.is_reversed;
         this.speed = state.speed;
         this.steering_angle = state.steering_angle;
+        this.closest_waypoints = state.closest_waypoints;
     }
 
     public override string ToString()
@@ -82,7 +84,6 @@ public struct Track
 
 public class StateProcessor
 {
-    public List<Vector3> waypoints = new List<Vector3>();
     public string getState(RawState rawState)
     {
         ProcessedState processedState = processState(rawState);
@@ -95,30 +96,9 @@ public class StateProcessor
         ps.setFromRawState(rawState);
         ps.is_crashed = !ps.all_wheels_on_track;
         ps.track_length = 300;
-        ps.track_width = 7.5f;
-        int closestPoint = getClosetWaypoint(ps.x, ps.y);
-        ps.closest_waypoints = new int[] { closestPoint, closestPoint + 1};
 
         return ps;
     }
-
-    // TODO: optimize this with checking only chunck
-    public int getClosetWaypoint(float x, float y)
-    {
-        int closestPoint = 0;
-        float closestDist = Mathf.Infinity;
-        for (int i = 0;i<waypoints.Count;i++)
-        {
-            float currentDist = Vector3.Distance(waypoints[i], new Vector3(x, 0, y));
-            if (currentDist < closestDist )
-            {
-                closestDist = currentDist;
-                closestPoint = i;
-            }
-        }
-        return closestPoint;
-    }
-
 }
 
 public class ActionProcessor 
@@ -147,11 +127,6 @@ public class InteractionManager
         this.serverConnector = serverConnector;
         stateProcessor = new StateProcessor();
         actionProcessor = new ActionProcessor();
-    }
-
-    public void setWaypoints(List<Vector3> waypoints)
-    {
-        stateProcessor.waypoints = waypoints;
     }
 
     public async Task<Track> GetTrackVerts(string trackName) 

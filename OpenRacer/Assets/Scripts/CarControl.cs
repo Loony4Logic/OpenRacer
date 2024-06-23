@@ -1,10 +1,11 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
-using Unity.PlasticSCM.Editor.WebApi;
 using UnityEngine;
 
 public class CarControl : MonoBehaviour
 {
+    public CarManager carManager;
+
     public float motorTorque = 2000;
     public float brakeTorque = 2000;
     public float maxSpeed = 20;
@@ -13,6 +14,8 @@ public class CarControl : MonoBehaviour
     public float centreOfGravityOffset = -1f;
     public bool ManualDrive = false;
     public bool all_wheels_on_track = true;
+    public int LastCheckpoint = 0;
+
 
     WheelControl[] wheels;
     Rigidbody rigidBody;
@@ -27,6 +30,21 @@ public class CarControl : MonoBehaviour
 
         // Find all child GameObjects that have the WheelControl script attached
         wheels = GetComponentsInChildren<WheelControl>();
+    }
+
+    public void resetPosition()
+    {
+        if (!carManager._carSetupReady) return;
+        LastCheckpoint = Math.Max(LastCheckpoint - 3, 0);
+        Vector3 startPosition = carManager.centerLine[LastCheckpoint];
+        Vector3 direction = carManager.centerLine[LastCheckpoint + 1] - carManager.centerLine[LastCheckpoint];
+        Rigidbody carRigidbody = GetComponent<Rigidbody>();
+        carRigidbody.Sleep();
+        carRigidbody.velocity = Vector3.zero;
+        carRigidbody.angularVelocity = Vector3.zero;
+        carRigidbody.position = startPosition + new Vector3(0, 2, 0);
+        carRigidbody.rotation = Quaternion.LookRotation(direction);
+        carRigidbody.WakeUp();
     }
 
     public RawState getRawState()
@@ -55,6 +73,8 @@ public class CarControl : MonoBehaviour
         rawState.steering_angle = wheels[0].WheelCollider.steerAngle;
         rawState.is_reversed = forwardSpeed < 0;
         rawState.all_wheels_on_track = all_wheels_on_track;
+        LastCheckpoint = carManager.getClosestWaypoint(gameObject.transform.position);
+        rawState.closest_waypoints = new int[] { LastCheckpoint, LastCheckpoint + 1 };
         return rawState;
     }
 
@@ -106,5 +126,6 @@ public class CarControl : MonoBehaviour
                 wheel.WheelCollider.motorTorque = 0;
             }
         }
+
     }
 }

@@ -1,7 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using TMPro;
+using UnityEngine;
 
 public class UIInteraction : MonoBehaviour
 {
@@ -11,15 +9,16 @@ public class UIInteraction : MonoBehaviour
     public InteractionManager interactionManager;
     public TrackGenerator trackGenerator;
     public CarManager carManager;
-    //TODO: get track from server and generate track
     public async void SendUpdate()
     {
         string trackName = trackInput.text;
-        Debug.Log($"Lets Race on: {trackName}");
         if (interactionManager == null) return;
-        Track track = await interactionManager.GetTrackVerts( trackName );
+        Track track = await interactionManager.GetTrackVerts(trackName);
         trackGenerator.generate(track.track);
-        carManager.Setup(trackGenerator.centerLine[trackGenerator.centerLine.Count-3] + new Vector3(0, 2f, 0));
+        Vector3 startPoint = trackGenerator.centerLine[trackGenerator.centerLine.Count - 2];
+        Vector3 nextPoint = trackGenerator.centerLine[trackGenerator.centerLine.Count - 1];
+        carManager.Setup(startPoint + new Vector3(0, 2f, 0), nextPoint - startPoint);
+        carManager.centerLine = trackGenerator.centerLine;
     }
 
 }

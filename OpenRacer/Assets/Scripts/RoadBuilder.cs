@@ -20,7 +20,7 @@ public class RoadBuilder : MonoBehaviour
     [Range(0.1f, 1f)]
     private float _width= 0.1f;
     [SerializeField]
-    [Range (10f, 500f)]
+    [Range (1f, 500f)]
     private float resolution = 300;
 
     [SerializeField]
@@ -100,7 +100,9 @@ public class RoadBuilder : MonoBehaviour
         Mesh mesh = new Mesh();
         List<Vector3> vertices = new List<Vector3>();
         List<int> tris = new List<int>();
+        List<Vector2> UVs = new List<Vector2>();
         int offset = 0;
+        float uvOffset = 0, uvDistance = 0; 
 
         int length = _vertsP2.Count;
 
@@ -133,10 +135,16 @@ public class RoadBuilder : MonoBehaviour
             vertices.AddRange(new List<Vector3> { p1, p2, p3, p4 });
             tris.AddRange(new List<int> {  t1, t2, t3, t4, t5, t6 });
 
+            float distance = Vector3.Distance(p1, p3)/ 4f;
+            uvDistance = uvOffset + distance;
+            UVs.AddRange(new List<Vector2> { new Vector2(uvOffset,0), new Vector2(uvOffset,1), new Vector2(uvDistance,0), new Vector2(uvDistance,1)});
+            uvOffset += distance; 
         }
 
         mesh.SetVertices(vertices);
         mesh.SetTriangles(tris, 0);
+        mesh.SetUVs(0, UVs);
+
         GetComponent<MeshFilter>().mesh = mesh;
         GetComponent<MeshCollider>().sharedMesh = mesh;
 
