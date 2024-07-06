@@ -4,6 +4,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using System.Net.NetworkInformation;
+using Unity.VisualScripting;
 
 public class TrainingMonitor : MonoBehaviour
 {
@@ -15,6 +16,8 @@ public class TrainingMonitor : MonoBehaviour
     TMP_Dropdown carDropdown;
     [SerializeField]
     TMP_Text CarLeaderLabel;
+    [SerializeField]
+    UIUtility _UIUtility;
 
     public string trackName;
     public int batchSize;
@@ -22,15 +25,17 @@ public class TrainingMonitor : MonoBehaviour
     public int sessionTotalTime;
 
     public CarManager carManager;
+    public InteractionManager interactionManager;
+    
 
     string EpochString = "Epoch ";
     int currentEpoch = 0;
     float sessionElapseTime = 0;
     string carLeaderString = "Leader is car";
 
-    public void setTrainingDetails(string name, int batchSize, int epoch, int sessionTime)
+    public void setTrainingDetails(string trackName, int batchSize, int epoch, int sessionTime)
     {
-        this.name = name;
+        this.trackName = trackName;
         this.batchSize = batchSize; 
         this.epoch = epoch;
         this.sessionTotalTime = sessionTime;
@@ -44,8 +49,7 @@ public class TrainingMonitor : MonoBehaviour
         EpochLabel.text = EpochString + $"{currentEpoch} / {epoch}";
     }
 
-    // Update is called once per frame
-    void Update()
+    async void LateUpdate()
     {
         if (sessionTotalTime == 0) return;
         sessionElapseTime += Time.deltaTime;
@@ -53,23 +57,31 @@ public class TrainingMonitor : MonoBehaviour
         
         if(sessionElapseTime > sessionTotalTime)
         {
+
+            carManager.activeEpochNumber = currentEpoch;
+            carManager.isEpochActive = false;
             sessionElapseTime = 0;
             currentEpoch++;
             EpochLabel.text = EpochString+$"{currentEpoch} / {epoch}";
-            carManager.restart();
-            //TODO: add end to the training
+            if (currentEpoch == epoch) 
+            {
+                _UIUtility.setUI(UIUtility.UINames.TrainingCompleted);
+                carManager.end();
+            }
         }
         CarLeaderLabel.text = $"{carLeaderString}{carManager.carLeader + 1}";
     }
 
     public void changeCar(int index)
     {
+        carManager.followLeader = false;
         carManager.currentCar = index;
     }
 
-    public void followLeader(bool follow)
+    public void setFollowLeader(bool follow)
     {
-        if (follow)
-            carManager.currentCar = carManager.carLeader;
+        carManager.followLeader = follow;
+        carDropdown.interactable = !follow;
+        
     }
 }

@@ -13,8 +13,6 @@ public class TrainingStart : MonoBehaviour
     ServerConnector serverConnector;
 
     [SerializeField]
-    GameObject startModal;
-    [SerializeField]
     TMP_InputField trackNameInput;
     [SerializeField]
     TMP_InputField batchSizeInput;
@@ -22,17 +20,16 @@ public class TrainingStart : MonoBehaviour
     TMP_InputField epochInput;
     [SerializeField]
     TMP_InputField sessionTimeInput;
-
     [SerializeField]
-    GameObject TrainingMonitorUI;
-
+    UIUtility _UIUtility;
+    
     // Start is called before the first frame update
     async void Start()
     {
-        startModal.SetActive(true);
-        TrainingMonitorUI.SetActive(false);
-        //TODO: add a loading screen while it connects to server
+        _UIUtility.setUI(UIUtility.UINames.LoadingScreen);   
         //TODO: display server connection status
+        //TODO: if server load fails then display that
+        //TODO: keep server connected if last message was a while back just ping the server 
         serverConnector = new ServerConnector();
         await serverConnector.Start();
 
@@ -43,8 +40,10 @@ public class TrainingStart : MonoBehaviour
         carManager = gameObject.GetComponent<CarManager>();
         carManager.interactionManager = interactionManager;
 
-        trainingMonitor = GetComponent<TrainingMonitor>();
         trainingMonitor.carManager = carManager;
+        trainingMonitor.interactionManager = interactionManager;
+        
+        _UIUtility.setUI(UIUtility.UINames.StartModal);
     }
 
     private void OnDestroy()
@@ -78,7 +77,6 @@ public class TrainingStart : MonoBehaviour
         carManager.Setup(startPoint + new Vector3(0, 2f, 0), nextPoint - startPoint);
         carManager.centerLine = trackGenerator.centerLine;
 
-        startModal.SetActive(false);
-        TrainingMonitorUI.SetActive(true);
+        _UIUtility.setUI(UIUtility.UINames.TrainingData);
     }
 }

@@ -37,8 +37,6 @@ public class RoadBuilder : MonoBehaviour
     List<Vector3> _vertsP1;
     List<Vector3> _vertsP2;
 
-
-    // Start is called before the first frame update
     void Start()
     {
         _splineContainer = gameObject.GetComponent<SplineContainer>();

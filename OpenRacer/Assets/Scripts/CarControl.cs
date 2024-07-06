@@ -75,6 +75,7 @@ public class CarControl : MonoBehaviour
         rawState.all_wheels_on_track = all_wheels_on_track;
         LastCheckpoint = carManager.getClosestWaypoint(gameObject.transform.position);
         rawState.closest_waypoints = new int[] { LastCheckpoint, LastCheckpoint + 1 };
+        rawState.progress = LastCheckpoint / carManager.centerLine.Count;
         return rawState;
     }
 

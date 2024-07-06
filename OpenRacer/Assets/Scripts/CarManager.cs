@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class CarManager : MonoBehaviour
@@ -21,6 +23,9 @@ public class CarManager : MonoBehaviour
 
     public int currentStep = 0;
     public int respondedStep = 0;
+    public bool followLeader = false;
+    public bool isEpochActive = true;
+    public int activeEpochNumber = 0;
 
     //Camera settings
     [SerializeField]
@@ -57,10 +62,10 @@ public class CarManager : MonoBehaviour
         for(int i = 0;i < batchSize; i++)
         {
             GameObject car = cars[i];
-            car.GetComponent<CarControl>().all_wheels_on_track = true;
-            car.GetComponent<CarControl>().LastCheckpoint = 0;
             Rigidbody carRigidbody = car.GetComponent<Rigidbody>();
             carRigidbody.Sleep();
+            car.GetComponent<CarControl>().all_wheels_on_track = true;
+            car.GetComponent<CarControl>().LastCheckpoint = 0;
             carRigidbody.velocity = Vector3.zero;
             carRigidbody.angularVelocity = Vector3.zero;
             carRigidbody.position = startPosition;
@@ -71,11 +76,35 @@ public class CarManager : MonoBehaviour
         _carSetupReady = true;
     }
 
+    public async Task<string> startEpoch(int epoch)
+    {
+        string ack = await interactionManager.sendEpochEnd(epoch);
+        restart();
+        isEpochActive = true;
+        return ack;
+    }
+
+    public void end()
+    {
+        _carSetupReady = false;
+        //TODO: receive all the data 
+        for(int i = 0; i < batchSize; i++)
+        {
+            Destroy(cars[i]);
+        }
+        batchSize =0;
+    }
+
     // Update is called once per frame
     async void FixedUpdate()
     {
         if(currentStep != respondedStep || ManualDrive || interactionManager == null || !_carSetupReady)
             return;
+        if (!isEpochActive)
+        {
+            await startEpoch(activeEpochNumber);
+            return;
+        }
         int maxCheckpoint = 0;
         List<RawState> rawStates = new List<RawState>();
         List<Action> actions;
@@ -103,6 +132,8 @@ public class CarManager : MonoBehaviour
 
     void updateCamera()
     {
+        if (currentCar >= batchSize) return;
+        if (followLeader) currentCar = carLeader;
         Transform carTransform = cars[currentCar].transform;
         Vector3 target = carTransform.position + carTransform.forward * - offset + carTransform.up * elevation;
         _camera.transform.position = Vector3.Lerp(_camera.transform.position, target, t);
@@ -124,4 +155,5 @@ public class CarManager : MonoBehaviour
         }
         return closestPoint;
     }
+
 }

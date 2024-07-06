@@ -39,6 +39,7 @@ public struct RawState
     public float speed;                         // agent's speed in meters per second (m/s)
     public float steering_angle;                // agent's steering angle in degrees
     public int[] closest_waypoints;             // indices of the two nearest waypoints.
+    public float progress;                      // percentage of track completed
 }
 
 public struct ProcessedState
@@ -67,6 +68,7 @@ public struct ProcessedState
         this.speed = state.speed;
         this.steering_angle = state.steering_angle;
         this.closest_waypoints = state.closest_waypoints;
+        this.progress = state.progress;
     }
 
     public override string ToString()
@@ -137,26 +139,42 @@ public class InteractionManager
         return track;
     }
 
+    public async Task<string> sendTrackVerts(Vector3 trackVerts)
+    {
+        string messageToSend = "trackAck~" + JsonUtility.ToJson(trackVerts);
+        string ackMessage = await serverConnector.sendToWebsocket(messageToSend);
+        Debug.Log(ackMessage);
+        return ackMessage;
+    }
+
     public async Task<Action> interact(RawState rawState)
     {
-        string messageForSocket = stateProcessor.getState(rawState);
-        string command = await serverConnector.sendToWebsocket(messageForSocket);
+        string messageToSend = stateProcessor.getState(rawState);
+        string command = await serverConnector.sendToWebsocket(messageToSend);
         Action action = actionProcessor.processAction(command);
         return action;
     }
 
     public async Task<List<Action>> sendBatch(List<RawState> rawState)
     {
-        string messageForSocket = "eval~";
+        string messageToSend = "eval~";
         List<string> states = new List<string>();
         for(int i = 0; i < rawState.Count; i++)
         {
             states.Add(stateProcessor.getState(rawState[i]));
         }
-        messageForSocket += states.ToCommaSeparatedString();
-        string command = await serverConnector.sendToWebsocket(messageForSocket);
+        messageToSend += states.ToCommaSeparatedString();
+        string command = await serverConnector.sendToWebsocket(messageToSend);
         List<Action> actions = actionProcessor.processActions(command);
         return actions;
+    }
+
+    public async Task<string> sendEpochEnd(int epochNum)
+    {
+        string messageToSend = "epoch~"+epochNum;
+        string ackMessage = await serverConnector.sendToWebsocket(messageToSend);
+        Debug.Log(ackMessage);
+        return ackMessage;
     }
 
 }
