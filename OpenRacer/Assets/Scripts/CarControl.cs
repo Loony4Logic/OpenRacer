@@ -16,7 +16,6 @@ public class CarControl : MonoBehaviour
     public bool all_wheels_on_track = true;
     public int LastCheckpoint = 0;
 
-
     WheelControl[] wheels;
     Rigidbody rigidBody;
 

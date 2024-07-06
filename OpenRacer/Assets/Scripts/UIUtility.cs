@@ -17,7 +17,6 @@ public class UIUtility : MonoBehaviour
         {
             UIs.Add(_gameObject.transform.GetChild(i).gameObject);
         }
-        Debug.Log(UIs.ToCommaSeparatedString());
     }
 
     public void setUI(UINames UI)

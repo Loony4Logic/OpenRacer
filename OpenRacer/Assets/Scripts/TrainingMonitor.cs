@@ -49,7 +49,7 @@ public class TrainingMonitor : MonoBehaviour
         EpochLabel.text = EpochString + $"{currentEpoch} / {epoch}";
     }
 
-    async void LateUpdate()
+    async void Update()
     {
         if (sessionTotalTime == 0) return;
         sessionElapseTime += Time.deltaTime;
@@ -57,7 +57,6 @@ public class TrainingMonitor : MonoBehaviour
         
         if(sessionElapseTime > sessionTotalTime)
         {
-
             carManager.activeEpochNumber = currentEpoch;
             carManager.isEpochActive = false;
             sessionElapseTime = 0;
@@ -75,7 +74,7 @@ public class TrainingMonitor : MonoBehaviour
     public void changeCar(int index)
     {
         carManager.followLeader = false;
-        carManager.currentCar = index;
+        carManager.setCurrentCar(index);
     }
 
     public void setFollowLeader(bool follow)

@@ -38,13 +38,13 @@ public class ServerConnector
         // Send a message to the server
         ArraySegment<byte> bytesToSend = new ArraySegment<byte>(Encoding.UTF8.GetBytes(messageToSend));
         await webSocket.SendAsync(bytesToSend, WebSocketMessageType.Text, true, cts.Token);
-        Debug.Log($"Sent: {messageToSend}");
+        // Debug.Log($"Sent: {messageToSend}");
 
         // Receive a message from the server
         ArraySegment<byte> bytesReceived = new ArraySegment<byte>(new byte[1024 * 50]);
         WebSocketReceiveResult result = await webSocket.ReceiveAsync(bytesReceived, cts.Token);
         string messageReceived = Encoding.UTF8.GetString(bytesReceived.Array, 0, result.Count);
-        Debug.Log($"Received: {messageReceived}");
+        // Debug.Log($"Received: {messageReceived}");
         return messageReceived;
     }
 }

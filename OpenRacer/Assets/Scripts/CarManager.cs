@@ -12,11 +12,16 @@ public class CarManager : MonoBehaviour
     public bool training = false;
     [SerializeField]
     public bool ManualDrive = false;
-    
+
+    [SerializeField]
+    Material transparentMaterial;
+    [SerializeField]
+    Material regularMaterial;
+
     public GameObject carPrefab;
     public InteractionManager interactionManager;
     public List<GameObject> cars;
-    public int currentCar = 0;
+    int currentCar = 0;
     public List<Vector3> centerLine;
     public int carLeader = 0;
 
@@ -56,22 +61,18 @@ public class CarManager : MonoBehaviour
     {
         carLeader = 0;
         currentCar = 0;
+        setMaterialForAllCars(regularMaterial);
         _carSetupReady = false;
-        Vector3 startPosition = centerLine[0] + new Vector3(0,2,0);
-        Quaternion rotation = Quaternion.LookRotation(centerLine[1] - centerLine[0]);
-        for(int i = 0;i < batchSize; i++)
-        {
-            GameObject car = cars[i];
-            Rigidbody carRigidbody = car.GetComponent<Rigidbody>();
-            carRigidbody.Sleep();
-            car.GetComponent<CarControl>().all_wheels_on_track = true;
-            car.GetComponent<CarControl>().LastCheckpoint = 0;
-            carRigidbody.velocity = Vector3.zero;
-            carRigidbody.angularVelocity = Vector3.zero;
-            carRigidbody.position = startPosition;
-            carRigidbody.rotation = rotation;
-            carRigidbody.WakeUp();
-        }
+
+
+        Vector3 startPoint = centerLine[centerLine.Count - 2];
+        Vector3 nextPoint = centerLine[centerLine.Count - 1];
+
+        Vector3 startPosition = centerLine[0];
+        Vector3 rotation = centerLine[1] - centerLine[0];
+        for(int i = 0;i < batchSize;i++) Destroy(cars[i]);
+        cars.Clear();
+        Setup(startPoint + new Vector3(0, 2f, 0), nextPoint - startPoint);
         updateCamera();
         _carSetupReady = true;
     }
@@ -133,7 +134,7 @@ public class CarManager : MonoBehaviour
     void updateCamera()
     {
         if (currentCar >= batchSize) return;
-        if (followLeader) currentCar = carLeader;
+        if (followLeader) setCurrentCar(carLeader);
         Transform carTransform = cars[currentCar].transform;
         Vector3 target = carTransform.position + carTransform.forward * - offset + carTransform.up * elevation;
         _camera.transform.position = Vector3.Lerp(_camera.transform.position, target, t);
@@ -154,6 +155,22 @@ public class CarManager : MonoBehaviour
             }
         }
         return closestPoint;
+    }
+
+    public void setCurrentCar(int carIndex)
+    {
+        currentCar = carIndex;
+        setMaterialForAllCars(transparentMaterial);
+        cars[carIndex].GetComponentInChildren<MeshRenderer>().sharedMaterial = regularMaterial;
+    }
+
+    void setMaterialForAllCars(Material _material) 
+    {
+        for(int i = 0;i<cars.Count;i++) 
+        {
+            cars[i].GetComponentInChildren<MeshRenderer>().sharedMaterial = _material;
+        }
+
     }
 
 }
