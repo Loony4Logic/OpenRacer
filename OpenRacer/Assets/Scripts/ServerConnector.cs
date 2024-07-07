@@ -8,7 +8,6 @@ using System.Collections.Generic;
 
 public class ServerConnector 
 {
-    Queue<string> messages = new Queue<string>();
     ClientWebSocket webSocket = new ClientWebSocket();
     Uri serverUri = new Uri("ws://localhost:8000/ws"); 
     // TODO: Create settings to change with custom WebSocket server URI
@@ -18,7 +17,6 @@ public class ServerConnector
     {
         await webSocket.ConnectAsync(serverUri, cts.Token);
         Debug.Log("Connected to the server");
-
         return true;
     }
 
@@ -30,6 +28,8 @@ public class ServerConnector
             Debug.Log("Connection closed");
         }
     }
+    
+    public WebSocketState status() { return webSocket.State; }
 
     public async Task<String> sendToWebsocket(string messageToSend)
     {

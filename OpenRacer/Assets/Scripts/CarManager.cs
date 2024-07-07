@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -155,6 +156,11 @@ public class CarManager : MonoBehaviour
             }
         }
         return closestPoint;
+    }
+
+    public int getCurrentCar()
+    {
+        return currentCar;
     }
 
     public void setCurrentCar(int carIndex)

@@ -2,6 +2,7 @@
 using JetBrains.Annotations;
 using System;
 using System.Collections.Generic;
+using System.Net.WebSockets;
 using System.Threading.Tasks;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.VisualScripting;
@@ -129,6 +130,11 @@ public class InteractionManager
         this.serverConnector = serverConnector;
         stateProcessor = new StateProcessor();
         actionProcessor = new ActionProcessor();
+    }
+
+    public WebSocketState status()
+    {
+        return this.serverConnector.status();
     }
 
     public async Task<Track> GetTrackVerts(string trackName) 

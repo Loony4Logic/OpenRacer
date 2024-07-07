@@ -6,6 +6,12 @@ public class CarControl : MonoBehaviour
 {
     public CarManager carManager;
 
+    [Header("Public vars")]
+    public int crashCount = 0;
+    public float progess = 0;
+    public float speed = 0;
+
+    [Header("Car settings")]
     public float motorTorque = 2000;
     public float brakeTorque = 2000;
     public float maxSpeed = 20;
@@ -44,6 +50,7 @@ public class CarControl : MonoBehaviour
         carRigidbody.position = startPosition + new Vector3(0, 2, 0);
         carRigidbody.rotation = Quaternion.LookRotation(direction);
         carRigidbody.WakeUp();
+        crashCount++;
     }
 
     public RawState getRawState()
@@ -74,7 +81,11 @@ public class CarControl : MonoBehaviour
         rawState.all_wheels_on_track = all_wheels_on_track;
         LastCheckpoint = carManager.getClosestWaypoint(gameObject.transform.position);
         rawState.closest_waypoints = new int[] { LastCheckpoint, LastCheckpoint + 1 };
-        rawState.progress = LastCheckpoint / carManager.centerLine.Count;
+        this.progess = (float)LastCheckpoint / carManager.centerLine.Count * 100;
+        rawState.progress = this.progess;
+
+        this.speed = rigidBody.velocity.magnitude;
+        
         return rawState;
     }
 

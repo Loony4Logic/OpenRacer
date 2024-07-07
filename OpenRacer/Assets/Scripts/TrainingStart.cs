@@ -31,7 +31,6 @@ public class TrainingStart : MonoBehaviour
         //TODO: if server load fails then display that
         //TODO: keep server connected if last message was a while back just ping the server 
         serverConnector = new ServerConnector();
-        await serverConnector.Start();
 
         interactionManager = new InteractionManager(serverConnector);
 
@@ -57,6 +56,8 @@ public class TrainingStart : MonoBehaviour
         int batchSize = int.Parse(batchSizeInput.text);
         int epoch = int.Parse(epochInput.text);
         int sessionTime = int.Parse(sessionTimeInput.text);
+        _UIUtility.setUI(UIUtility.UINames.LoadingScreen);
+        await serverConnector.Start();
         Debug.Log($"Track: {trackName}, batchSize: {batchSize}, epoch: {epoch}, sessionTime: {sessionTime}");
 
         trainingMonitor.setTrainingDetails(trackName, batchSize, epoch, sessionTime);
@@ -71,8 +72,8 @@ public class TrainingStart : MonoBehaviour
         TrackGenerator trackGenerator = track.GetComponent<TrackGenerator>();
         trackGenerator.generate(trackVert.track);
 
-        Vector3 startPoint = trackGenerator.centerLine[trackGenerator.centerLine.Count - 2];
-        Vector3 nextPoint = trackGenerator.centerLine[trackGenerator.centerLine.Count - 1];
+        Vector3 startPoint = trackGenerator.centerLine[0];
+        Vector3 nextPoint = trackGenerator.centerLine[1];
         carManager.batchSize =  batchSize;
         carManager.Setup(startPoint + new Vector3(0, 2f, 0), nextPoint - startPoint);
         carManager.centerLine = trackGenerator.centerLine;
