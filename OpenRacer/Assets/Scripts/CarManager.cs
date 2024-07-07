@@ -89,7 +89,6 @@ public class CarManager : MonoBehaviour
     public void end()
     {
         _carSetupReady = false;
-        //TODO: receive all the data 
         for(int i = 0; i < batchSize; i++)
         {
             Destroy(cars[i]);

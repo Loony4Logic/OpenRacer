@@ -13,6 +13,11 @@ public class ServerConnector
     // TODO: Create settings to change with custom WebSocket server URI
     CancellationTokenSource cts = new CancellationTokenSource();
 
+    public void setURL(string url)
+    {
+        serverUri = new Uri(url);
+    }
+
     async public Task<bool> Start()
     {
         await webSocket.ConnectAsync(serverUri, cts.Token);
@@ -34,7 +39,6 @@ public class ServerConnector
     public async Task<String> sendToWebsocket(string messageToSend)
     {
         if (string.IsNullOrEmpty(messageToSend)) return null;
-        //TODO: add a check to see if there is any waiting in msg
         // Send a message to the server
         ArraySegment<byte> bytesToSend = new ArraySegment<byte>(Encoding.UTF8.GetBytes(messageToSend));
         await webSocket.SendAsync(bytesToSend, WebSocketMessageType.Text, true, cts.Token);

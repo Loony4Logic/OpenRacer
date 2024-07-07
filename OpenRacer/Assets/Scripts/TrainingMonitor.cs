@@ -37,6 +37,16 @@ public class TrainingMonitor : MonoBehaviour
     [SerializeField]
     List<string> ObserverDefaultText = new List<string> {"",  "Observer: ", "Progress: ", "Speed: ", "Crash Count: " };
 
+    [Header("End Data")]
+    [SerializeField]
+    TMP_Text TrackNameValue;
+    [SerializeField]
+    TMP_Text BatchSizeValue;
+    [SerializeField]
+    TMP_Text EpochValue;
+    [SerializeField]
+    TMP_Text SessionTimeValue;
+
 
     [Header("Public Settings")]
     [SerializeField]
@@ -72,6 +82,7 @@ public class TrainingMonitor : MonoBehaviour
         carDropdown.AddOptions(cars);
         EpochLabel.text = EpochString + $"{currentEpoch} / {epoch}";
         trackNameLabel.text = $"Track name: {trackName}";
+        setTrainingDetails();
     }
 
     async void Update()
@@ -104,6 +115,14 @@ public class TrainingMonitor : MonoBehaviour
         }
         CarLeaderLabel.text = $"{carLeaderString}{carManager.carLeader + 1}";
 
+    }
+
+    void setTrainingDetails()
+    {
+        TrackNameValue.text = trackName;
+        BatchSizeValue.text = batchSize.ToString();
+        EpochValue.text = epoch.ToString();
+        SessionTimeValue.text = sessionTotalTime.ToString();
     }
 
     void updateElapseTime()

@@ -21,6 +21,8 @@ public class TrainingStart : MonoBehaviour
     [SerializeField]
     TMP_InputField sessionTimeInput;
     [SerializeField]
+    TMP_InputField URLInput;
+    [SerializeField]
     UIUtility _UIUtility;
     
     // Start is called before the first frame update
@@ -56,10 +58,11 @@ public class TrainingStart : MonoBehaviour
         int batchSize = int.Parse(batchSizeInput.text);
         int epoch = int.Parse(epochInput.text);
         int sessionTime = int.Parse(sessionTimeInput.text);
+        string URL = URLInput.text;
         _UIUtility.setUI(UIUtility.UINames.LoadingScreen);
-        await serverConnector.Start();
         Debug.Log($"Track: {trackName}, batchSize: {batchSize}, epoch: {epoch}, sessionTime: {sessionTime}");
-
+        serverConnector.setURL(URL);
+        await serverConnector.Start();
         trainingMonitor.setTrainingDetails(trackName, batchSize, epoch, sessionTime);
 
         if (interactionManager == null)
