@@ -4,6 +4,16 @@ import json
 import random
 from enum import Enum 
 import os
+from Interface import Interface
+from Model import RandomModel
+
+# TODO: Create an interface
+# TODO: make a ping pong point
+# TODO: Add pretty print and fancy console 
+Interface(model=RandomModel()).start()
+
+
+"""app = FastAPI(title="OpenRacer API")
 
 ACK = "ack"
 
@@ -26,11 +36,6 @@ def EvalBatch(inputData):
         a+=10
     # Placeholder for ML computation step about 2 sec per step
     return {"actions": [{"x": random.randrange(-100, 100)/100, "y":random.randrange(-2, 5)/2} for i in range(len(inputData))]}               
-
-# TODO: Create an interface
-# TODO: make a ping pong point
-# TODO: Add pretty print and fancy console 
-app = FastAPI()
 
 @app.get("/")
 def Hello():
@@ -70,3 +75,5 @@ async def checkCommand(signal):
     elif command == COMMAND.End:
         print("Training Ended")
         return ACK
+    
+"""
