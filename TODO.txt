@@ -1,0 +1,29 @@
+unity start
+connect to server (Show Connection icon)
+module selection
+
+Training details 
+    -> send track name
+    <- send track coords
+    -> send updated coords
+    <- send ack
+Epoch start
+    -> send epoch start 
+    <- send ack
+training
+    -> send state
+    <- send action
+training end
+    -> send training Ended
+    <- send ack
+Unity show training details 
+python may show training data (time, accuracy, path)
+
+
+car++
+track++
+slider + input box
+hide other cars
+spectaters details
+distance progress bar
+comparision with leader
