@@ -25,10 +25,16 @@ hide other cars
 spectaters details
 distance progress bar
 comparision with leader
+send details from unity
+Add start page
 
 TODO:
+Add model saving (checkpoint)
+Add Race Scene
+Add Loading screen for transition
+Add documentation
+
 car++
 track++
-slider + input box // To much difficult
-send details from unity
 Add lap counter 
+slider + input box // To much difficult
