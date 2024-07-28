@@ -59,19 +59,6 @@ public class CarControl : MonoBehaviour
         // (this returns a negative number when traveling backwards)
         float forwardSpeed = Vector3.Dot(transform.forward, rigidBody.velocity);
 
-
-        // Calculate how close the car is to top speed
-        // as a number from zero to one
-        float speedFactor = Mathf.InverseLerp(0, maxSpeed, forwardSpeed);
-
-        // Use that to calculate how much torque is available 
-        // (zero torque at top speed)
-        float currentMotorTorque = Mathf.Lerp(motorTorque, 0, speedFactor);
-
-        // …and to calculate how much to steer 
-        // (the car steers more gently at top speed)
-        float currentSteerRange = Mathf.Lerp(steeringRange, steeringRangeAtMaxSpeed, speedFactor);
-
         RawState rawState = new RawState();
         rawState.x = gameObject.transform.position.x;
         rawState.y = gameObject.transform.position.z;

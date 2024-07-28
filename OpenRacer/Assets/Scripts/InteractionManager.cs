@@ -84,6 +84,21 @@ public struct Track
     public List<Vector3> track;
 }
 
+public struct Details
+{
+    public string trackName;
+    public int batchSize;
+    public int epoch;
+    public int sessionTime;
+
+    public void fillDetails(string trackName, int batchSize, int epoch, int sessionTime)
+    {
+        this.trackName = trackName;
+        this.epoch = epoch;
+        this.batchSize = batchSize;
+        this.sessionTime = sessionTime;
+    }
+}
 
 public class StateProcessor
 {
@@ -180,6 +195,15 @@ public class InteractionManager
         string messageToSend = "epoch~"+epochNum;
         string ackMessage = await serverConnector.sendToWebsocket(messageToSend);
         Debug.Log(ackMessage);
+        return ackMessage;
+    }
+
+    public async Task<string> sendDetails(string trackName, int batchSize, int epoch, int sessionTime)
+    {
+        Details details = new Details();
+        details.fillDetails(trackName, batchSize, epoch, sessionTime);
+        string messageToSend = "details~" + JsonUtility.ToJson(details);
+        string ackMessage = await serverConnector.sendToWebsocket(messageToSend);
         return ackMessage;
     }
 

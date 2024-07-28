@@ -19,11 +19,16 @@ training end
 Unity show training details 
 python may show training data (time, accuracy, path)
 
-
-car++
-track++
-slider + input box
+---------------------------------------------------------------------------------
+Done:
 hide other cars
 spectaters details
 distance progress bar
 comparision with leader
+
+TODO:
+car++
+track++
+slider + input box // To much difficult
+send details from unity
+Add lap counter 

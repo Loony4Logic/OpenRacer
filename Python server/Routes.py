@@ -5,13 +5,23 @@ from Constants import COMMAND, ACK
 import os
 import numpy as np
 from Model import ModelBase
+from Recorder import Recorder
 
 class Routes:
     def __init__(self, model:ModelBase):
         self.model = model
+        self.recorder = Recorder()
+        self.model.setRecorder(self.recorder)
         self.communicationRoutes = APIRouter(prefix="/api/v1", tags=["Communication"])
         self.communicationRoutes.add_api_route("/", self.hello, methods=["GET"])
         self.communicationRoutes.add_api_websocket_route("/ws", self.websocket_endpoint)
+        # TODO: make a new router for data retrival
+        self.communicationRoutes.add_api_route("/getRecords/{agentId}/{session}", self.getRecords, methods=["GET"])
+        self.communicationRoutes.add_api_route("/getSessionRun/{session}", self.getSessionRun, methods=["GET"])
+        self.communicationRoutes.add_api_route("/getAgentRun/{agentId}", self.getAgentRun, methods=["GET"])
+        self.communicationRoutes.add_api_route("/getProgressChartData", self.getProgressChartData, methods=["GET"])
+        self.communicationRoutes.add_api_route("/getChartData/{attribute}/{agentId}/{session}", self.getChartData, methods=["GET"])
+        self.communicationRoutes.add_api_route("/getRunDetails", self.getRunDetails, methods=["GET"])
         
     def hello(self):
         """Respond with hello. could be use for testing"""
@@ -78,3 +88,27 @@ class Routes:
         elif command == COMMAND.End:
             print("Training Ended")
             return ACK
+        
+        elif command == COMMAND.Details:
+            print(value)
+            details = json.loads(value)
+            self.recorder.details(details["epoch"], details["batchSize"], details["trackName"], details["sessionTime"])
+            return ACK
+
+    def getRecords(self, agentId:int, session:int):
+        return self.recorder.getRecords(agentId, session)
+    
+    def getSessionRun(self, session:int):
+        return self.recorder.getSessionRun(session)
+
+    def getAgentRun(self, agentId:int):
+        return self.recorder.getAgentRun(agentId)
+    
+    def getProgressChartData(self):
+        return self.recorder.getProgress()
+        
+    def getChartData(self, attribute:str, agentId:int, session:int):
+        return self.recorder.getDetailsOf(attribute, agentId, session)
+    
+    def getRunDetails(self):
+        return self.recorder.runDetails()

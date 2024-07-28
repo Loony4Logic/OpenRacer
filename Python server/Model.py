@@ -7,12 +7,14 @@ from Recorder import Recorder
 class ModelBase:
     def __init__(self):
         print("Model started")
-        self.recorder = Recorder()
         self.session = 0
     
     @abstractmethod
     def getModel(self):
         pass
+
+    def setRecorder(self, recorder:Recorder):
+        self.recorder = recorder
 
     def setTrack(self, track:List[List[float]]):
         self.track = track
@@ -26,7 +28,7 @@ class ModelBase:
             self.backprop(action, inputData)
         else:
             action = self.testEval(inputData)
-        self.recorder.record(formattedInputData, inputData, action, reward, self.session)
+        self.recorder.record(formattedInputData, action, reward, self.session)
         return self.formatAction(action)
     
     @abstractmethod        
@@ -50,7 +52,9 @@ class ModelBase:
         return inputData
     
     def formatInput(self, unprocessedInput:str) -> dict:
-        return json.loads(f"[{unprocessedInput}]")
+        inputData = json.loads(f"[{unprocessedInput}]")
+        self.agnetCount = len(inputData)
+        return inputData
     
     def formatAction(self, action:np.ndarray):
         return {"actions": list(map(lambda x: {"x":x[0], "y":x[1]}, action))}

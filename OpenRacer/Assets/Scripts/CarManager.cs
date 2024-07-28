@@ -48,7 +48,7 @@ public class CarManager : MonoBehaviour
 
     public bool _carSetupReady = false;
 
-    public void Setup(Vector3 startpoint, Vector3 direction)
+    public async void Setup(Vector3 startpoint, Vector3 direction)
     {
         for(int i = 0; i < batchSize; i++)
         {
@@ -66,11 +66,8 @@ public class CarManager : MonoBehaviour
         _carSetupReady = false;
 
 
-        Vector3 startPoint = centerLine[centerLine.Count - 2];
-        Vector3 nextPoint = centerLine[centerLine.Count - 1];
-
-        Vector3 startPosition = centerLine[0];
-        Vector3 rotation = centerLine[1] - centerLine[0];
+        Vector3 startPoint = centerLine[0];
+        Vector3 nextPoint = centerLine[1];
         for(int i = 0;i < batchSize;i++) Destroy(cars[i]);
         cars.Clear();
         Setup(startPoint + new Vector3(0, 2f, 0), nextPoint - startPoint);

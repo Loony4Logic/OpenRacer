@@ -8154,6 +8154,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 111575634}
     m_Modifications:
+    - target: {fileID: 715211688181806819, guid: 7a62ee18fd3bf2f408a3b0c6b2b106e3, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 400
+      objectReference: {fileID: 0}
+    - target: {fileID: 3332897587902738288, guid: 7a62ee18fd3bf2f408a3b0c6b2b106e3, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 400
+      objectReference: {fileID: 0}
+    - target: {fileID: 3557608794995323172, guid: 7a62ee18fd3bf2f408a3b0c6b2b106e3, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 400
+      objectReference: {fileID: 0}
+    - target: {fileID: 3840827013221355922, guid: 7a62ee18fd3bf2f408a3b0c6b2b106e3, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 400
+      objectReference: {fileID: 0}
     - target: {fileID: 6545758075099316175, guid: 7a62ee18fd3bf2f408a3b0c6b2b106e3, type: 3}
       propertyPath: m_Name
       value: Training Start Modal
@@ -8242,6 +8258,14 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 966576893}
+    - target: {fileID: 7653633931285019041, guid: 7a62ee18fd3bf2f408a3b0c6b2b106e3, type: 3}
+      propertyPath: m_Text
+      value: ws://localhost:8000/api/v1/ws
+      objectReference: {fileID: 0}
+    - target: {fileID: 8651622767915442300, guid: 7a62ee18fd3bf2f408a3b0c6b2b106e3, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 400
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

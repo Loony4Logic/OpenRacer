@@ -59,10 +59,13 @@ public class TrainingStart : MonoBehaviour
         int epoch = int.Parse(epochInput.text);
         int sessionTime = int.Parse(sessionTimeInput.text);
         string URL = URLInput.text;
+
         _UIUtility.setUI(UIUtility.UINames.LoadingScreen);
         Debug.Log($"Track: {trackName}, batchSize: {batchSize}, epoch: {epoch}, sessionTime: {sessionTime}");
+        
         serverConnector.setURL(URL);
         await serverConnector.Start();
+
         trainingMonitor.setTrainingDetails(trackName, batchSize, epoch, sessionTime);
 
         if (interactionManager == null)
@@ -78,6 +81,7 @@ public class TrainingStart : MonoBehaviour
         Vector3 startPoint = trackGenerator.centerLine[0];
         Vector3 nextPoint = trackGenerator.centerLine[1];
         carManager.batchSize =  batchSize;
+        await interactionManager.sendDetails(trackName, batchSize, epoch, sessionTime);
         carManager.Setup(startPoint + new Vector3(0, 2f, 0), nextPoint - startPoint);
         carManager.centerLine = trackGenerator.centerLine;
 

@@ -7,8 +7,21 @@ import uvicorn
 
 from Model import ModelBase
 from Routes import Routes
+from fastapi.middleware.cors import CORSMiddleware
 
 server = FastAPI(title="OpenRacer API", redoc_url="/docs", docs_url="/docs-old")
+
+origins = [
+    "http://localhost:5173",
+]
+
+server.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class Interface:
     def __init__(self, model:ModelBase, host:str="localhost", port:int=8000, debug:bool = False):

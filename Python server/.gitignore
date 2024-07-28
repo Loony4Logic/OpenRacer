@@ -1,2 +1,4 @@
 __pycache__
-session.db
+*.db
+*.db-wal
+*.db-shm
