@@ -1,8 +1,10 @@
 # OpenRacer
 
-<center><img src="LOGO.jpg" height="250" /></center>
+<p align="center">
+<img src="LOGO.jpg" height="250" /></center>
+</p>
 
-**OpenRacer** is an open-source platform that empowers you to train machine learning models for autonomous racing. Built with Python and powered by a Unity-based 3D environment, OpenRacer offers a dynamic and accessible way to develop and test AI models in a simulated racing environment.
+**OpenRacer** is an open-source platform that empowers you to train machine-learning models for autonomous racing. Built with Python and powered by a Unity-based 3D environment, OpenRacer offers a dynamic and accessible way to develop and test AI models in a simulated racing environment.
 
 ## 🚀 Features
 
@@ -11,7 +13,7 @@
 - **Custom Track Creation**: Generate your own tracks using coordinates provided by the server, or use premade tracks.
 - **Real-Time Progress Monitoring**: Visualize your model's training progress and racing performance through an integrated web interface with live updates and detailed graphs.
 - **Hyperparameter Tuning**: Easily adjust hyperparameters to optimize your model's performance.
-- **Open-Source Flexibility**: Customize and extend the platform to suit your unique needs, thanks to its fully open-source codebase.
+- **Open-Source Flexibility**: Customize and extend the platform to suit your unique needs, thanks to its open-source codebase.
 
 ## 🎯 Impact
 
@@ -21,7 +23,7 @@ OpenRacer is designed to lower the barrier to entry for autonomous racing and ma
 
 ## 📚 Getting Started
 
-### Stable version for wider use will be released soon
+### A stable version for wider use will be released soon
 
 
 ### Nightly Installation
@@ -62,15 +64,15 @@ OpenRacer is designed to lower the barrier to entry for autonomous racing and ma
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please create a issue or contact me though linkedin.
-Will add structured issue and guidelines after a while. 
+Contributions are welcome! Please create an issue or contact me through LinkedIn.
+I will add structured issues and guidelines after a while. 
 
 ## 🛡️ License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](License) file for details.
 
 ## 🙌 Acknowledgments
 
 - Inspired by AWS DeepRacer.
-- Special thanks to @TejasNair9977 for 3D model and @palakagarwal369 .
+- Special thanks to [Tejas Nair](https://github.com/TejasNair9977) for 3D model and [Palak Agarwal](https://github.com/palakagarwal369).
 ---
