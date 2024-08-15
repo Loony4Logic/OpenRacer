@@ -1,37 +1,30 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditorInternal;
-using UnityEngine;
 using TMPro;
+using Unity.VisualScripting;
+using UnityEngine;
 
-public class TrainingStart : MonoBehaviour
+public class TestingStart : MonoBehaviour
 {
     public InteractionManager interactionManager;
     public CarManager carManager;
     public GameObject track;
-    public TrainingMonitor trainingMonitor;
+    public TestMonitor testMonitor;
     ServerConnector serverConnector;
 
     [SerializeField]
     TMP_InputField trackNameInput;
-    [SerializeField]
-    TMP_InputField batchSizeInput;
-    [SerializeField]
-    TMP_InputField epochInput;
     [SerializeField]
     TMP_InputField sessionTimeInput;
     [SerializeField]
     TMP_InputField URLInput;
     [SerializeField]
     UIUtility _UIUtility;
-    
+
     // Start is called before the first frame update
     async void Start()
     {
-        _UIUtility.setUI(UIUtility.UINames.LoadingScreen);   
-        //TODO: display server connection status
-        //TODO: if server load fails then display that
-        //TODO: keep server connected if last message was a while back just ping the server 
+        _UIUtility.setUI(UIUtility.UINames.LoadingScreen);
         serverConnector = new ServerConnector();
 
         interactionManager = new InteractionManager(serverConnector);
@@ -40,10 +33,11 @@ public class TrainingStart : MonoBehaviour
 
         carManager = gameObject.GetComponent<CarManager>();
         carManager.interactionManager = interactionManager;
+        carManager.testing = true;
 
-        trainingMonitor.carManager = carManager;
-        trainingMonitor.interactionManager = interactionManager;
-        
+        testMonitor.carManager = carManager;
+        testMonitor.interactionManager = interactionManager;
+
         _UIUtility.setUI(UIUtility.UINames.StartModal);
     }
 
@@ -55,18 +49,18 @@ public class TrainingStart : MonoBehaviour
     public async void startScene()
     {
         string trackName = trackNameInput.text;
-        int batchSize = int.Parse(batchSizeInput.text);
-        int epoch = int.Parse(epochInput.text);
         int sessionTime = int.Parse(sessionTimeInput.text);
+        int batchSize = 1;
+        int epoch = 1;
         string URL = URLInput.text;
 
         _UIUtility.setUI(UIUtility.UINames.LoadingScreen);
-        Debug.Log($"Track: {trackName}, batchSize: {batchSize}, epoch: {epoch}, sessionTime: {sessionTime}, url: {URL}");
-        
+        Debug.Log($"Track: {trackName}, sessionTime: {sessionTime}");
+
         serverConnector.setURL(URL);
         await serverConnector.Start();
 
-        trainingMonitor.setTrainingDetails(trackName, batchSize, epoch, sessionTime);
+        // trainingMonitor.setTrainingDetails(trackName, batchSize, epoch, sessionTime);
 
         if (interactionManager == null)
         {
@@ -77,10 +71,12 @@ public class TrainingStart : MonoBehaviour
         Track trackVert = await interactionManager.GetTrackVerts(trackName);
         TrackGenerator trackGenerator = track.GetComponent<TrackGenerator>();
         trackGenerator.generate(trackVert.track);
+        Debug.Log(trackGenerator.centerLine.ToCommaSeparatedString());
+        await interactionManager.sendTrackVerts(trackGenerator.centerLine);
 
         Vector3 startPoint = trackGenerator.centerLine[0];
         Vector3 nextPoint = trackGenerator.centerLine[1];
-        carManager.batchSize =  batchSize;
+        carManager.batchSize = batchSize;
         await interactionManager.sendDetails(trackName, batchSize, epoch, sessionTime);
         carManager.Setup(startPoint + new Vector3(0, 2f, 0), nextPoint - startPoint);
         carManager.centerLine = trackGenerator.centerLine;

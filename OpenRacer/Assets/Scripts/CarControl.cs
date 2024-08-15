@@ -2,6 +2,14 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+class Lap
+{
+    public float duration;
+    public float crashCount;
+    public float startTime;
+    public float endTime;
+}
+
 public class CarControl : MonoBehaviour
 {
     public CarManager carManager;
@@ -25,6 +33,9 @@ public class CarControl : MonoBehaviour
     WheelControl[] wheels;
     Rigidbody rigidBody;
 
+    List<Lap> laps = new List<Lap>();
+    int lapCount = -1;
+ 
     // Start is called before the first frame update
     void Start()
     {
@@ -35,6 +46,7 @@ public class CarControl : MonoBehaviour
 
         // Find all child GameObjects that have the WheelControl script attached
         wheels = GetComponentsInChildren<WheelControl>();
+
     }
 
     public void resetPosition()
@@ -53,6 +65,21 @@ public class CarControl : MonoBehaviour
         crashCount++;
     }
 
+    public void startLap(float time)
+    {
+        lapCount++;
+        laps.Add(new Lap());
+        laps[lapCount].startTime = time;
+        crashCount = 0;
+    }
+
+    public void endLap(float time)
+    {
+        laps[lapCount].endTime = time;
+        laps[lapCount].duration = time - laps[lapCount].startTime;
+        laps[lapCount].crashCount = crashCount;
+    }
+
     public RawState getRawState()
     {
         // Calculate current speed in relation to the forward direction of the car
@@ -68,7 +95,7 @@ public class CarControl : MonoBehaviour
         rawState.all_wheels_on_track = all_wheels_on_track;
         LastCheckpoint = carManager.getClosestWaypoint(gameObject.transform.position);
         rawState.closest_waypoints = new int[] { LastCheckpoint, LastCheckpoint + 1 };
-        this.progess = (float)LastCheckpoint / carManager.centerLine.Count * 100;
+        this.progess = (float)(LastCheckpoint+1) / carManager.centerLine.Count * 100;
         rawState.progress = this.progess;
 
         this.speed = rigidBody.velocity.magnitude;

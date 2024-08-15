@@ -4137,9 +4137,9 @@ MonoBehaviour:
   batchSize: 5
   training: 0
   ManualDrive: 0
-  transparentMaterial: {fileID: 2100000, guid: 3addaec273e77ce4da288cc51d24f66f, type: 2}
-  regularMaterial: {fileID: 2100000, guid: 788ad0e89a468424f90d9bfbc56d917d, type: 2}
-  carPrefab: {fileID: 4612940078991098402, guid: 640c1b56f40544b478992189863110f4, type: 3}
+  transparentMaterial: {fileID: 2100000, guid: 2ae0bf2cf507fa74eaa7a0f0a9b511dc, type: 2}
+  regularMaterial: {fileID: 2100000, guid: 67356573849342e44808599bf6223656, type: 2}
+  carPrefab: {fileID: 2768621516989215440, guid: 95070a092f4405b47a298ada871efaa6, type: 3}
   cars: []
   centerLine: []
   carLeader: 0

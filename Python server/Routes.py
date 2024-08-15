@@ -1,4 +1,5 @@
 import json
+import ast
 from typing import List
 from fastapi import APIRouter, WebSocket
 from Constants import COMMAND, ACK
@@ -6,6 +7,7 @@ import os
 import numpy as np
 from Model import ModelBase
 from Recorder import Recorder
+
 
 class Routes:
     def __init__(self, model:ModelBase):
@@ -73,7 +75,8 @@ class Routes:
         
         elif command == COMMAND.TrackAck:
             track_coords_string = value
-            track = json.loads(track_coords_string)
+            track = ast.literal_eval(track_coords_string)
+            self.model.setTrack(list(track))
             return ACK
         
         elif command == COMMAND.Epoch:
@@ -93,6 +96,13 @@ class Routes:
             print(value)
             details = json.loads(value)
             self.recorder.details(details["epoch"], details["batchSize"], details["trackName"], details["sessionTime"])
+            return ACK
+        
+        elif command == COMMAND.Test:
+            output = self.model.eval(value, isTraining=False)
+            return output
+
+        elif command == COMMAND.Lap:
             return ACK
 
     def getRecords(self, agentId:int, session:int):

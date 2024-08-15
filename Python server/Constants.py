@@ -7,6 +7,8 @@ class COMMAND(str, Enum):
     Details = "details"
     Epoch = "epoch"
     Eval = "eval"
+    Test = "test"
+    Lap = "lap" 
     End = "end"
 
 ACK = "ack"

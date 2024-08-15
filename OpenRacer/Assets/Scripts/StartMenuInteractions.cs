@@ -16,7 +16,7 @@ public class StartMenuInteractions : MonoBehaviour
     }
     public void openRace()
     {
-        SceneManager.LoadSceneAsync("Scenes/Racing");
+        SceneManager.LoadSceneAsync("Scenes/Testing");
     }
 
 }

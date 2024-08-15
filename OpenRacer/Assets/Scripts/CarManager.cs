@@ -47,13 +47,24 @@ public class CarManager : MonoBehaviour
     float t = 0.005f;
 
     public bool _carSetupReady = false;
+    public bool testing = false;
+
+    float time = 0.0f;
+
+    public bool debug = false;
+    public GameObject dot;
+    public List<GameObject> dots;
 
     public async void Setup(Vector3 startpoint, Vector3 direction)
     {
         for(int i = 0; i < batchSize; i++)
         {
-            cars.Add(Instantiate(carPrefab, startpoint, Quaternion.LookRotation(direction)));
-            cars.Last().GetComponent<CarControl>().carManager = this;
+            GameObject car = Instantiate(carPrefab, startpoint, Quaternion.LookRotation(direction));
+            cars.Add(car);
+            car.GetComponent<CarControl>().carManager = this;
+            car.GetComponent<CarControl>().startLap(time);
+            if(debug)
+                dots.Add(Instantiate(dot, startpoint, Quaternion.LookRotation(direction)));
         }
         _carSetupReady=true;
     }
@@ -96,6 +107,7 @@ public class CarManager : MonoBehaviour
     // Update is called once per frame
     async void FixedUpdate()
     {
+        time += Time.deltaTime;
         if(currentStep != respondedStep || ManualDrive || interactionManager == null || !_carSetupReady)
             return;
         if (!isEpochActive)
@@ -112,14 +124,18 @@ public class CarManager : MonoBehaviour
             CarControl carControl = cars[i].GetComponent<CarControl>();
             RawState rawState = carControl.getRawState();
             rawStates.Add(rawState);
-
+            if(carControl.progess == 100) carControl.endLap(time);
             if (rawState.closest_waypoints[0] > maxCheckpoint)
             {
                 maxCheckpoint = rawState.closest_waypoints[0];
                 carLeader = i;
             }
+            if (debug) dots[i].GetComponent<Transform>().position = centerLine[(rawState.closest_waypoints[0] + 2)%centerLine.Count];
         }
-        actions = await interactionManager.sendBatch(rawStates);
+        if (testing)
+            actions = await interactionManager.sendForTest(rawStates);
+        else
+            actions = await interactionManager.sendBatch(rawStates);
         respondedStep++;
         for(int i = 0; i<batchSize; i++)
         {

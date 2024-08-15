@@ -10,7 +10,6 @@ public class ServerConnector
 {
     ClientWebSocket webSocket = new ClientWebSocket();
     Uri serverUri = new Uri("ws://localhost:8000/ws"); 
-    // TODO: Create settings to change with custom WebSocket server URI
     CancellationTokenSource cts = new CancellationTokenSource();
 
     public void setURL(string url)

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
+using System.Xml;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -160,9 +161,10 @@ public class InteractionManager
         return track;
     }
 
-    public async Task<string> sendTrackVerts(Vector3 trackVerts)
+    public async Task<string> sendTrackVerts(List<Vector3> trackVerts)
     {
-        string messageToSend = "trackAck~" + JsonUtility.ToJson(trackVerts);
+        string messageToSend = "trackAck~" + trackVerts.ToCommaSeparatedString();
+        Debug.Log(messageToSend);
         string ackMessage = await serverConnector.sendToWebsocket(messageToSend);
         Debug.Log(ackMessage);
         return ackMessage;
@@ -183,6 +185,20 @@ public class InteractionManager
         for(int i = 0; i < rawState.Count; i++)
         {
             states.Add(stateProcessor.getState(rawState[i]));
+        }
+        messageToSend += states.ToCommaSeparatedString();
+        string command = await serverConnector.sendToWebsocket(messageToSend);
+        List<Action> actions = actionProcessor.processActions(command);
+        return actions;
+    }
+
+    public async Task<List<Action>> sendForTest(List<RawState> rawStates)
+    {
+        string messageToSend = "test~";
+        List<string> states = new List<string>();
+        for (int i = 0; i < rawStates.Count; i++)
+        {
+            states.Add(stateProcessor.getState(rawStates[i]));
         }
         messageToSend += states.ToCommaSeparatedString();
         string command = await serverConnector.sendToWebsocket(messageToSend);
