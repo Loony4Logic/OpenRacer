@@ -50,16 +50,25 @@ OpenRacer is designed to lower the barrier to entry for autonomous racing and ma
    pip install -r requirements.txt
    ```
 
+3. Run Python server
+
+   This will run an exmaple model. Which is currently random. so don't expect it to give any good performace
+
+   ```bash
+   python server.py 
+   ```
+
 3. Open the Unity project:
 
    - Open Unity Hub, click on "Add Project," and select the `OpenRacer` folder within the project directory.
+   - Load the scene you want to try. Training for training model. Testing for evalulating your model. 
 
 4. Start the web interface:
 
    ```bash
    cd React UI
    npm install
-   npm start
+   npm run dev
    ```
 
 ## 🤝 Contributing
