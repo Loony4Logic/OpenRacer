@@ -15,6 +15,8 @@ public class TestingStart : MonoBehaviour
     [SerializeField]
     TMP_InputField trackNameInput;
     [SerializeField]
+    TMP_InputField lapCountInput;
+    [SerializeField]
     TMP_InputField sessionTimeInput;
     [SerializeField]
     TMP_InputField URLInput;
@@ -51,7 +53,7 @@ public class TestingStart : MonoBehaviour
         string trackName = trackNameInput.text;
         int sessionTime = int.Parse(sessionTimeInput.text);
         int batchSize = 1;
-        int epoch = 1;
+        int lapCount = int.Parse(lapCountInput.text);
         string URL = URLInput.text;
 
         _UIUtility.setUI(UIUtility.UINames.LoadingScreen);
@@ -59,8 +61,6 @@ public class TestingStart : MonoBehaviour
 
         serverConnector.setURL(URL);
         await serverConnector.Start();
-
-        // TODO: trainingMonitor.setTrainingDetails(trackName, batchSize, epoch, sessionTime);
 
         if (interactionManager == null)
         {
@@ -79,9 +79,12 @@ public class TestingStart : MonoBehaviour
         Vector3 startPoint = trackGenerator.centerLine[0];
         Vector3 nextPoint = trackGenerator.centerLine[1];
         carManager.batchSize = batchSize;
-        await interactionManager.sendDetails(trackName, batchSize, epoch, sessionTime);
+        await interactionManager.sendDetails(trackName, batchSize, lapCount, sessionTime);
         carManager.Setup(startPoint + new Vector3(0, 2f, 0), nextPoint - startPoint);
         carManager.centerLine = trackGenerator.centerLine;
+
+        // TODO: Test UI ---> 
+        testMonitor.setTestingDetails(trackName, lapCount, sessionTime);
 
         _UIUtility.setUI(UIUtility.UINames.TrainingData);
     }

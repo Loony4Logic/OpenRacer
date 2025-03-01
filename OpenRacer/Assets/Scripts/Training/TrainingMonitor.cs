@@ -15,7 +15,7 @@ using UnityEngine.Timeline;
 
 public class TrainingMonitor : MonoBehaviour
 {
-    [Header("Comman Data")]
+    [Header("Labels")]
     [SerializeField]
     TMP_Text EpochLabel;
     [SerializeField]
@@ -91,7 +91,7 @@ public class TrainingMonitor : MonoBehaviour
         setTrainingDetails();
     }
 
-    async void Update()
+    void Update()
     {
         updateElapseTime();
         updateDetails();
@@ -138,6 +138,8 @@ public class TrainingMonitor : MonoBehaviour
         sessionElapseTime += Time.deltaTime;
         SessionElapseTimeImage.rectTransform.sizeDelta = new Vector2(sessionElapseTime / sessionTotalTime * 300f, 15);
     }
+
+    /* ***************************** Updating perspective / view ******************************* */
 
     void updateComparisionPanel()
     {

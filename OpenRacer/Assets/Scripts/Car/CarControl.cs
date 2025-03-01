@@ -40,7 +40,7 @@ public class CarControl : MonoBehaviour
     Rigidbody rigidBody;
 
     List<Lap> laps = new List<Lap>();
-    int lapCount = -1;
+    public int lapCount = -1;
  
     // Start is called before the first frame update
     void Start()

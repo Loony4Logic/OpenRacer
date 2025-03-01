@@ -143,7 +143,7 @@ public class CarManager : MonoBehaviour
             if (debug) dots[i].GetComponent<Transform>().position = centerLine[(rawState.closest_waypoints[0] + 2)%centerLine.Count];
             carControl.GetComponent<Rigidbody>().Sleep(); // put car to sleep
         }
-        
+        // TODO: Make a hybrid system 
         if (testing)
             actions = await interactionManager.sendForTest(rawStates);
         else
