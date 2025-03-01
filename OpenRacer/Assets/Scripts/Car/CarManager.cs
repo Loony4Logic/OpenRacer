@@ -1,3 +1,8 @@
+/*
+ * This handles all the cars in the scene. Cars should be generated through this script only. 
+ * also handles all the external interaction regarding car action and car state.
+ */
+
 using JetBrains.Annotations;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,7 +49,7 @@ public class CarManager : MonoBehaviour
     float elevation = 2f;
 
     [SerializeField]
-    float t = 0.005f;
+    float cameraSmoothFactor = 0.005f;
 
     public bool _carSetupReady = false;
     public bool testing = false;
@@ -115,6 +120,7 @@ public class CarManager : MonoBehaviour
             await startEpoch(activeEpochNumber);
             return;
         }
+        
         int maxCheckpoint = 0;
         List<RawState> rawStates = new List<RawState>();
         List<Action> actions;
@@ -124,22 +130,30 @@ public class CarManager : MonoBehaviour
             CarControl carControl = cars[i].GetComponent<CarControl>();
             RawState rawState = carControl.getRawState();
             rawStates.Add(rawState);
+
+            // If car completed a lap
             if(carControl.progess == 100) carControl.endLap(time);
+            
+            // If car goes ahead of leader.
             if (rawState.closest_waypoints[0] > maxCheckpoint)
             {
                 maxCheckpoint = rawState.closest_waypoints[0];
                 carLeader = i;
             }
             if (debug) dots[i].GetComponent<Transform>().position = centerLine[(rawState.closest_waypoints[0] + 2)%centerLine.Count];
+            carControl.GetComponent<Rigidbody>().Sleep(); // put car to sleep
         }
+        
         if (testing)
             actions = await interactionManager.sendForTest(rawStates);
         else
             actions = await interactionManager.sendBatch(rawStates);
+
         respondedStep++;
         for(int i = 0; i<batchSize; i++)
         {
             cars[i].GetComponent<CarControl>().move(actions[i].y, actions[i].x);
+            cars[i].GetComponent<Rigidbody>().WakeUp(); // wake car and make action
         }
         updateCamera();
     }
@@ -150,7 +164,7 @@ public class CarManager : MonoBehaviour
         if (followLeader) setCurrentCar(carLeader);
         Transform carTransform = cars[currentCar].transform;
         Vector3 target = carTransform.position + carTransform.forward * - offset + carTransform.up * elevation;
-        _camera.transform.position = Vector3.Lerp(_camera.transform.position, target, t);
+        _camera.transform.position = Vector3.Lerp(_camera.transform.position, target, cameraSmoothFactor);
         _camera.transform.LookAt(carTransform.position);
     }
 

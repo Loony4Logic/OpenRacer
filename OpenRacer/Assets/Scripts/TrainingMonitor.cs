@@ -1,3 +1,9 @@
+/* 
+ * This file is responsible for UI of training data and keeping training process in check
+ * TODO: need to split into seperate part where one handles all the UI updates and another just the process. 
+ * this process needs to be used for training and testing.
+ */
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

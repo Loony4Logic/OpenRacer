@@ -5,6 +5,7 @@ import numpy as np
 from typing import List
 from Recorder import Recorder
 from datatypes import Params
+import time
 
 class ModelBase:
     def __init__(self):
@@ -165,7 +166,10 @@ class RandomModel(ModelBase):
     def trainEval(self, inputData):
         return np.clip(np.random.rand(len(inputData),2) * 5 -2, -1,1)
     
+    
+    
     def testEval(self, inputData):
+        time.sleep(1)
         res = []
         for carInputData in inputData:
             x = carInputData["x"]

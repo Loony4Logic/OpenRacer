@@ -60,7 +60,7 @@ public class TestingStart : MonoBehaviour
         serverConnector.setURL(URL);
         await serverConnector.Start();
 
-        // trainingMonitor.setTrainingDetails(trackName, batchSize, epoch, sessionTime);
+        // TODO: trainingMonitor.setTrainingDetails(trackName, batchSize, epoch, sessionTime);
 
         if (interactionManager == null)
         {
@@ -68,12 +68,14 @@ public class TestingStart : MonoBehaviour
             return;
         }
 
+        // Generating Track from Track name
         Track trackVert = await interactionManager.GetTrackVerts(trackName);
         TrackGenerator trackGenerator = track.GetComponent<TrackGenerator>();
         trackGenerator.generate(trackVert.track);
         Debug.Log(trackGenerator.centerLine.ToCommaSeparatedString());
-        await interactionManager.sendTrackVerts(trackGenerator.centerLine);
+        await interactionManager.sendTrackVerts(trackGenerator.centerLine); // Sending back the center line after scale 
 
+        // initialising base info to start testing/Eval
         Vector3 startPoint = trackGenerator.centerLine[0];
         Vector3 nextPoint = trackGenerator.centerLine[1];
         carManager.batchSize = batchSize;

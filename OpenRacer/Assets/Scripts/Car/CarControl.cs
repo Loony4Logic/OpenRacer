@@ -1,3 +1,9 @@
+/*
+ * Manages individual cars. 
+ * handles move, physics, and stats for car.
+ * 
+ */
+
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -78,6 +84,7 @@ public class CarControl : MonoBehaviour
         laps[lapCount].endTime = time;
         laps[lapCount].duration = time - laps[lapCount].startTime;
         laps[lapCount].crashCount = crashCount;
+        startLap(time);
     }
 
     public RawState getRawState()
