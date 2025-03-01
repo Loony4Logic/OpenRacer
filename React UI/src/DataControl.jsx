@@ -40,7 +40,7 @@ export function DataControl({
         <Grid>
           <Card variant="soft">
             <Typography fontWeight="md" textColor="primary.700">
-              Agent 1
+              Entity 1
             </Typography>
             <Stack
               direction="row"
@@ -79,7 +79,7 @@ export function DataControl({
         <Grid>
           <Card variant="soft">
             <Typography fontWeight="md" textColor="primary.700">
-              Agent 2
+              Entity 2
             </Typography>
             <Stack
               direction="row"

@@ -34,7 +34,11 @@ class Interface:
         server.include_router(self.router.communicationRoutes)
         
     def start(self):
-        """ Start the server. """
+        """ 
+        Start the server. 
+        Calls the fastapi server to start.
+        Also creates sqlite db for each start.
+        """
         self.printStart(intro=["Welcome to OperRacer", f"[link={self.url}]Home Page: {self.url}[/link]"])
         uvicorn.run("Interface:server", host=self.host, port=self.port)
         

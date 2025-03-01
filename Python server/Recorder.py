@@ -36,14 +36,25 @@ class Recorder:
     );
         """
     def __init__(self):
-        self.recordId = str(uuid.uuid4())
-        dbName = f"session{self.recordId}.db" if not os.getenv("TEST_RECORDER") else "test.db"
+        debug = True
+        USE_TEST_RECODER = os.getenv("USE_TEST_RECORDER")
+        if not USE_TEST_RECODER or USE_TEST_RECODER == "False":
+            debug = False
+        
+        if debug:
+            dbName = "test.db"
+        else:
+            self.recordId = str(uuid.uuid4())
+            dbName = f"session{self.recordId}.db"
+        
+        
         self.con = sqlite3.connect(dbName, check_same_thread=False, isolation_level=None)
         self.con.execute('pragma journal_mode=wal')
-        print(f"Initialized a recorder: {self.recordId}")
+        print(f"Initialized a recorder: {dbName}")
         self.cur = self.con.cursor()
         self.ReadCur = self.con.cursor()
-        if os.getenv("TEST_RECORDER"):
+        
+        if debug:
             return
         print("Creating table")
         self.cur.execute(self.createInputTable)
