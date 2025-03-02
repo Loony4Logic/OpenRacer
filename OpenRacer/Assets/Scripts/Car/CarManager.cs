@@ -3,11 +3,8 @@
  * also handles all the external interaction regarding car action and car state.
  */
 
-using JetBrains.Annotations;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class CarManager : MonoBehaviour
@@ -59,8 +56,9 @@ public class CarManager : MonoBehaviour
     public bool debug = false;
     public GameObject dot;
     public List<GameObject> dots;
+    private bool asleep = false;
 
-    public async void Setup(Vector3 startpoint, Vector3 direction)
+    public void Setup(Vector3 startpoint, Vector3 direction)
     {
         for(int i = 0; i < batchSize; i++)
         {
@@ -72,6 +70,12 @@ public class CarManager : MonoBehaviour
                 dots.Add(Instantiate(dot, startpoint, Quaternion.LookRotation(direction)));
         }
         _carSetupReady=true;
+    }
+
+    public void Start() 
+    {
+        Physics.simulationMode = SimulationMode.Script;
+        iterate();
     }
 
     public void restart()
@@ -110,13 +114,28 @@ public class CarManager : MonoBehaviour
     }
 
     // Update is called once per frame
-    async void FixedUpdate()
+    async void iterate()
     {
-        time += Time.deltaTime;
-        if(currentStep != respondedStep || ManualDrive || interactionManager == null || !_carSetupReady)
+        Debug.Log("Starting Iter cycle");
+
+        if (this.asleep)
+        {
+            Debug.LogError("This shouldn't happen");
+            iterate();
             return;
+        }
+        time += Time.deltaTime;
+        Debug.Log("current Iter time"+time.ToString());
+        if (currentStep != respondedStep || ManualDrive || interactionManager == null || !_carSetupReady)
+        {
+            Debug.Log("Waiting for world to setup");
+            Invoke("iterate", 1);
+            return;
+        }
         if (!isEpochActive)
         {
+            Debug.Log("Waiting for epoch to setup");
+            iterate();
             await startEpoch(activeEpochNumber);
             return;
         }
@@ -125,6 +144,7 @@ public class CarManager : MonoBehaviour
         List<RawState> rawStates = new List<RawState>();
         List<Action> actions;
         currentStep++;
+        Debug.Log($"Getting raw state: {currentStep}");
         for (int i = 0;i < batchSize; i++)
         {
             CarControl carControl = cars[i].GetComponent<CarControl>();
@@ -141,21 +161,27 @@ public class CarManager : MonoBehaviour
                 carLeader = i;
             }
             if (debug) dots[i].GetComponent<Transform>().position = centerLine[(rawState.closest_waypoints[0] + 2)%centerLine.Count];
-            carControl.GetComponent<Rigidbody>().Sleep(); // put car to sleep
+            //carControl.GetComponent<Rigidbody>().Sleep(); // put car to sleep
+            /*this.asleep = true;*/
         }
+        Debug.Log($"Sending env for {currentStep}");
         // TODO: Make a hybrid system 
         if (testing)
             actions = await interactionManager.sendForTest(rawStates);
         else
             actions = await interactionManager.sendBatch(rawStates);
-
+        Debug.Log($"received action for {currentStep}");
         respondedStep++;
         for(int i = 0; i<batchSize; i++)
         {
+            Debug.Log($"Moving along {currentStep}, {respondedStep}");
             cars[i].GetComponent<CarControl>().move(actions[i].y, actions[i].x);
-            cars[i].GetComponent<Rigidbody>().WakeUp(); // wake car and make action
+            //cars[i].GetComponent<Rigidbody>().WakeUp(); // wake car and make action
+            //this.asleep = false;
         }
         updateCamera();
+        Physics.Simulate(0.041f); // 1/24 
+        iterate();
     }
 
     void updateCamera()
