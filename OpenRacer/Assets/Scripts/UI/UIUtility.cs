@@ -1,13 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class UIUtility : MonoBehaviour
 {
     [SerializeField]
     GameObject UIContainer;
-    public enum UINames { LoadingScreen, StartModal, TrainingData, TrainingCompleted };
+
+    [SerializeField]
+    TMP_Text InfoText;
+    public enum UINames { LoadingScreen, StartModal, TrainingData, TrainingCompleted, InfoModal };
 
     List<GameObject> UIs = new List<GameObject>();
 
@@ -33,4 +38,14 @@ public class UIUtility : MonoBehaviour
         getChilds(UIContainer);
     }
 
+    public void Alert(string message)
+    {
+        InfoText.text = message;
+        setUI(UINames.InfoModal);
+    }
+
+    public void goToMenu()
+    {
+        SceneManager.LoadSceneAsync("Scenes/Start");
+    }
 }

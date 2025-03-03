@@ -1,11 +1,7 @@
-
-using JetBrains.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
-using System.Xml;
-using Unity.Collections.LowLevel.Unsafe;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -157,25 +153,45 @@ public class InteractionManager
     {
         string messageToSend = "track~" + trackName;
         string trackJsonString = await serverConnector.sendToWebsocket(messageToSend);
-        Track track = JsonUtility.FromJson<Track>(trackJsonString);
-        return track;
+        if (trackJsonString == null) throw new Exception("Track not received");
+        try
+        {
+            Track track = JsonUtility.FromJson<Track>(trackJsonString);
+            return track;
+        }catch(Exception e)
+        {
+            Debug.LogException(e);
+            throw new Exception("Unable to Make track from received coordinates.\nMake sure coordinate are not >300 pt\n");
+        }
     }
 
     public async Task<string> sendTrackVerts(List<Vector3> trackVerts)
     {
         string messageToSend = "trackAck~" + trackVerts.ToCommaSeparatedString();
-        Debug.Log(messageToSend);
         string ackMessage = await serverConnector.sendToWebsocket(messageToSend);
-        Debug.Log(ackMessage);
+        if(ackMessage == null)
+        {  
+            throw new Exception("Enable to send Track coordinates to serevr.\nCheck Error on server and retry.");
+        }
         return ackMessage;
+
     }
 
+    // Depericated. 
     public async Task<Action> interact(RawState rawState)
     {
         string messageToSend = stateProcessor.getState(rawState);
         string command = await serverConnector.sendToWebsocket(messageToSend);
-        Action action = actionProcessor.processAction(command);
-        return action;
+        if (command == null) throw new Exception("Unable to communicate with Websocket.");
+        try
+        {
+            Action action = actionProcessor.processAction(command);
+            return action;
+        }catch (Exception e) 
+        {
+            Debug.LogException(e);
+            throw new Exception("Unable to process action provided by websocket.\nCheck format of the message.");
+        }
     }
 
     public async Task<List<Action>> sendBatch(List<RawState> rawState)
@@ -188,8 +204,16 @@ public class InteractionManager
         }
         messageToSend += states.ToCommaSeparatedString();
         string command = await serverConnector.sendToWebsocket(messageToSend);
-        List<Action> actions = actionProcessor.processActions(command);
-        return actions;
+        if (command == null) throw new Exception("Unable to communicate with Websocket.");
+        try
+        {
+            List<Action> actions = actionProcessor.processActions(command);
+            return actions;
+        }catch(Exception e)
+        {
+            Debug.LogException(e);
+            throw new Exception("Unable to process action provided by websocket.\nCheck format of the message.");
+        }
     }
 
     public async Task<List<Action>> sendForTest(List<RawState> rawStates)
@@ -202,15 +226,24 @@ public class InteractionManager
         }
         messageToSend += states.ToCommaSeparatedString();
         string command = await serverConnector.sendToWebsocket(messageToSend);
-        List<Action> actions = actionProcessor.processActions(command);
-        return actions;
+        if (command == null) throw new Exception("Unable to communicate with Websocket.");
+        try
+        {
+            List<Action> actions = actionProcessor.processActions(command);
+            return actions;
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+            throw new Exception("Unable to process action provided by websocket.\nCheck format of the message.");
+        }
     }
 
     public async Task<string> sendEpochEnd(int epochNum)
     {
         string messageToSend = "epoch~"+epochNum;
         string ackMessage = await serverConnector.sendToWebsocket(messageToSend);
-        Debug.Log(ackMessage);
+        if (ackMessage == null) throw new Exception("Unable to communicate with Websocket.");
         return ackMessage;
     }
 
@@ -220,6 +253,7 @@ public class InteractionManager
         details.fillDetails(trackName, batchSize, epoch, sessionTime);
         string messageToSend = "details~" + JsonUtility.ToJson(details);
         string ackMessage = await serverConnector.sendToWebsocket(messageToSend);
+        if (ackMessage == null) throw new Exception("Unable to communicate with Websocket.");
         return ackMessage;
     }
 

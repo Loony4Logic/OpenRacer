@@ -3,6 +3,7 @@
  * also handles all the external interaction regarding car action and car state.
  */
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -53,6 +54,9 @@ public class CarManager : MonoBehaviour
 
     float time = 0.0f;
 
+    [SerializeField]
+    UIUtility _UIUtility;
+
     public bool debug = false;
     public GameObject dot;
     public List<GameObject> dots;
@@ -97,10 +101,20 @@ public class CarManager : MonoBehaviour
 
     public async Task<string> startEpoch(int epoch)
     {
-        string ack = await interactionManager.sendEpochEnd(epoch);
-        restart();
-        isEpochActive = true;
-        return ack;
+        try
+        {
+            string ack = await interactionManager.sendEpochEnd(epoch);
+            restart();
+            isEpochActive = true;
+            return ack;
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+            _UIUtility.Alert(e.Message);
+            return null;
+        }
+
     }
 
     public void end()
@@ -135,8 +149,9 @@ public class CarManager : MonoBehaviour
         if (!isEpochActive)
         {
             Debug.Log("Waiting for epoch to setup");
-            iterate();
-            await startEpoch(activeEpochNumber);
+            string signal = await startEpoch(activeEpochNumber);
+            if (signal == null) { return; } // Unable to communicate. End the simulation.
+            Invoke("iterate", 1);
             return;
         }
         
@@ -166,10 +181,18 @@ public class CarManager : MonoBehaviour
         }
         Debug.Log($"Sending env for {currentStep}");
         // TODO: Make a hybrid system 
-        if (testing)
-            actions = await interactionManager.sendForTest(rawStates);
-        else
-            actions = await interactionManager.sendBatch(rawStates);
+        try
+        {
+            if (testing)
+                actions = await interactionManager.sendForTest(rawStates);
+            else
+                actions = await interactionManager.sendBatch(rawStates);
+        }catch (Exception e)
+        {
+            Debug.LogException(e);
+            _UIUtility.Alert(e.Message);
+            return; // no iterate we ran into some issue.
+        }
         Debug.Log($"received action for {currentStep}");
         respondedStep++;
         for(int i = 0; i<batchSize; i++)

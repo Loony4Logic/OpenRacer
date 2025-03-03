@@ -67,7 +67,7 @@ public class TrainingMonitor : MonoBehaviour
     public CarManager carManager;
     public InteractionManager interactionManager;
 
-
+    bool systemReady = false;
     string EpochString = "Epoch ";
     int currentEpoch = 0;
     float sessionElapseTime = 0;
@@ -88,11 +88,16 @@ public class TrainingMonitor : MonoBehaviour
         carDropdown.AddOptions(cars);
         EpochLabel.text = EpochString + $"{currentEpoch} / {epoch}";
         trackNameLabel.text = $"Track name: {trackName}";
+        this.systemReady = true;
         setTrainingDetails();
     }
 
     void Update()
     {
+        Debug.Log("Update the UI values");
+        Debug.Log(this.systemReady);
+        if (!this.systemReady) return;
+        Debug.Log("System is ready");
         updateElapseTime();
         updateDetails();
         updateComparisionPanel();
@@ -115,8 +120,8 @@ public class TrainingMonitor : MonoBehaviour
             EpochLabel.text = EpochString+$"{currentEpoch} / {epoch}";
             if (currentEpoch == epoch) 
             {
-                _UIUtility.setUI(UIUtility.UINames.TrainingCompleted);
                 carManager.end();
+                _UIUtility.setUI(UIUtility.UINames.TrainingCompleted);
             }
         }
         CarLeaderLabel.text = $"{carLeaderString}{carManager.carLeader + 1}";
@@ -133,8 +138,8 @@ public class TrainingMonitor : MonoBehaviour
 
     void updateElapseTime()
     {
-
         if (sessionTotalTime == 0) return;
+        Debug.Log($"Time {sessionElapseTime.ToString()}");
         sessionElapseTime += Time.deltaTime;
         SessionElapseTimeImage.rectTransform.sizeDelta = new Vector2(sessionElapseTime / sessionTotalTime * 300f, 15);
     }

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEditorInternal;
 using UnityEngine;
 using TMPro;
+using UnityEditor.MemoryProfiler;
+using System;
 
 public class TrainingStart : MonoBehaviour
 {
@@ -35,7 +37,7 @@ public class TrainingStart : MonoBehaviour
         serverConnector = new ServerConnector();
 
         interactionManager = new InteractionManager(serverConnector);
-
+            
         TrackGenerator trackGenerator = track.GetComponent<TrackGenerator>();
 
         carManager = gameObject.GetComponent<CarManager>();
@@ -64,27 +66,36 @@ public class TrainingStart : MonoBehaviour
         Debug.Log($"Track: {trackName}, batchSize: {batchSize}, epoch: {epoch}, sessionTime: {sessionTime}, url: {URL}");
         
         serverConnector.setURL(URL);
-        await serverConnector.Start();
 
-        trainingMonitor.setTrainingDetails(trackName, batchSize, epoch, sessionTime);
-
-        if (interactionManager == null)
+        bool connection = await serverConnector.Start();
+        if (!connection || interactionManager == null)
         {
             Debug.Log("Something Wrong can't connect to server");
+            _UIUtility.Alert("Error Unable to connect to Network.\nRetry after checking server.\nCheck server URL.");
             return;
         }
 
-        Track trackVert = await interactionManager.GetTrackVerts(trackName);
-        TrackGenerator trackGenerator = track.GetComponent<TrackGenerator>();
-        trackGenerator.generate(trackVert.track);
+        trainingMonitor.setTrainingDetails(trackName, batchSize, epoch, sessionTime);
 
-        Vector3 startPoint = trackGenerator.centerLine[0];
-        Vector3 nextPoint = trackGenerator.centerLine[1];
-        carManager.batchSize =  batchSize;
-        await interactionManager.sendDetails(trackName, batchSize, epoch, sessionTime);
-        carManager.Setup(startPoint + new Vector3(0, 2f, 0), nextPoint - startPoint);
-        carManager.centerLine = trackGenerator.centerLine;
+        try
+        {
+            Track trackVert = await interactionManager.GetTrackVerts(trackName);
+            TrackGenerator trackGenerator = track.GetComponent<TrackGenerator>();
+            trackGenerator.generate(trackVert.track);
+            Vector3 startPoint = trackGenerator.centerLine[0];
+            Vector3 nextPoint = trackGenerator.centerLine[1];
+            carManager.batchSize = batchSize;
+            await interactionManager.sendDetails(trackName, batchSize, epoch, sessionTime);
+            carManager.Setup(startPoint + new Vector3(0, 2f, 0), nextPoint - startPoint);
+            carManager.centerLine = trackGenerator.centerLine;
+            _UIUtility.setUI(UIUtility.UINames.TrainingData);
+        }
+        catch(Exception e)
+        {
+            Debug.Log(e);
+            _UIUtility.Alert(e.Message);
+            return;
+        }
 
-        _UIUtility.setUI(UIUtility.UINames.TrainingData);
     }
 }

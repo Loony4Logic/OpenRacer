@@ -26,6 +26,9 @@ public class RoadBuilder : MonoBehaviour
     [SerializeField]
     private Material _material;
 
+    [SerializeField]
+    UIUtility _UIUtility;
+
     float3 position;
     float3 forward;
     float3 upVector;

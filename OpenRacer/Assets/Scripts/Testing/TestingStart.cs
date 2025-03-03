@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -60,32 +61,41 @@ public class TestingStart : MonoBehaviour
         Debug.Log($"Track: {trackName}, sessionTime: {sessionTime}");
 
         serverConnector.setURL(URL);
-        await serverConnector.Start();
-
-        if (interactionManager == null)
-        {
+        bool connection = await serverConnector.Start();
+        if (!connection || interactionManager==null) 
+        { 
+            // TODO: GO to menu page
             Debug.Log("Something Wrong can't connect to server");
+            _UIUtility.Alert("Error Unable to connect to Network.\nRetry after checking server.\nCheck server URL.");
             return;
         }
+        try
+        {
+            // Generating Track from Track name
+            Track trackVert = await interactionManager.GetTrackVerts(trackName);
+            TrackGenerator trackGenerator = track.GetComponent<TrackGenerator>();
+            trackGenerator.generate(trackVert.track);
+            Debug.Log(trackGenerator.centerLine.ToCommaSeparatedString());
+            await interactionManager.sendTrackVerts(trackGenerator.centerLine); // Sending back the center line after scale 
 
-        // Generating Track from Track name
-        Track trackVert = await interactionManager.GetTrackVerts(trackName);
-        TrackGenerator trackGenerator = track.GetComponent<TrackGenerator>();
-        trackGenerator.generate(trackVert.track);
-        Debug.Log(trackGenerator.centerLine.ToCommaSeparatedString());
-        await interactionManager.sendTrackVerts(trackGenerator.centerLine); // Sending back the center line after scale 
+            // initialising base info to start testing/Eval
+            Vector3 startPoint = trackGenerator.centerLine[0];
+            Vector3 nextPoint = trackGenerator.centerLine[1];
+            carManager.batchSize = batchSize;
+            await interactionManager.sendDetails(trackName, batchSize, lapCount, sessionTime);
+            carManager.Setup(startPoint + new Vector3(0, 2f, 0), nextPoint - startPoint);
+            carManager.centerLine = trackGenerator.centerLine;
 
-        // initialising base info to start testing/Eval
-        Vector3 startPoint = trackGenerator.centerLine[0];
-        Vector3 nextPoint = trackGenerator.centerLine[1];
-        carManager.batchSize = batchSize;
-        await interactionManager.sendDetails(trackName, batchSize, lapCount, sessionTime);
-        carManager.Setup(startPoint + new Vector3(0, 2f, 0), nextPoint - startPoint);
-        carManager.centerLine = trackGenerator.centerLine;
+            // TODO: Test UI ---> 
+            testMonitor.setTestingDetails(trackName, lapCount, sessionTime);
 
-        // TODO: Test UI ---> 
-        testMonitor.setTestingDetails(trackName, lapCount, sessionTime);
-
-        _UIUtility.setUI(UIUtility.UINames.TrainingData);
+            _UIUtility.setUI(UIUtility.UINames.TrainingData);
+        }
+        catch(Exception  e) 
+        {
+            Debug.LogException(e);
+            _UIUtility.Alert(e.Message);
+            return;
+        }
     }
 }
