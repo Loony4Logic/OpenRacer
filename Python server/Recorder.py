@@ -5,7 +5,7 @@ import uuid
 
 class Recorder:
     createInputTable = """
-    CREATE TABLE step(
+    CREATE TABLE if not exists step(
         timestamp DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
         all_wheels_on_track BOOLEAN CHECK(all_wheels_on_track IN(0, 1)),
         x float,
@@ -28,14 +28,19 @@ class Recorder:
         agentId int,
         session int);"""
     createDetailsTable="""
-    CREATE TABLE details(
+    CREATE TABLE if not exists details(
         sessionCount int,
         agentCount int,
         trackName string,
         sessionTime int
     );
         """
-    def __init__(self):
+    def __init__(self, modelName:str):
+        """setup recorder for a mode and start connection for same. 
+
+        Args:
+            modelName (str): Name of model, this will be used for directory name and filename  
+        """
         debug = True
         USE_TEST_RECODER = os.getenv("USE_TEST_RECORDER")
         if not USE_TEST_RECODER or USE_TEST_RECODER == "False":
@@ -44,17 +49,20 @@ class Recorder:
         if debug:
             dbName = "test.db"
         else:
-            self.recordId = str(uuid.uuid4())
-            dbName = f"session{self.recordId}.db"
+            dbName = f"{modelName}.db"
         
+        dirPath = os.path.join(os.getcwd(), "db", modelName)
+        dbPath = os.path.join(dirPath, dbName)
+        os.makedirs(dirPath, exist_ok=True)
         
-        self.con = sqlite3.connect(dbName, check_same_thread=False, isolation_level=None)
+        print(f"DB path for model: {modelName} is {dbPath}")
+        self.con = sqlite3.connect(dbPath, check_same_thread=False, isolation_level=None)
         self.con.execute('pragma journal_mode=wal')
         print(f"Initialized a recorder: {dbName}")
         self.cur = self.con.cursor()
         self.ReadCur = self.con.cursor()
         
-        if debug:
+        if debug or self.con:
             return
         print("Creating table")
         self.cur.execute(self.createInputTable)

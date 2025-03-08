@@ -1,27 +1,49 @@
 from abc import abstractmethod
 import json
 import math
+import os
 import numpy as np
 from typing import List
 from Recorder import Recorder
 from datatypes import Params
 import time
 
-class ModelBase:
+class ModelInterface:
     def __init__(self):
         """Initializing BaseClass for AI Model
         """
         print("Model started")
         self.session = 0
+        self.models = dict()
+        self.currentModel = None
+        self.recorder: Recorder = None
+        
+    def addModel(self, model):
+        """add ML model with a name atteibute. model.name should be a non empty string.
+
+        Args:
+            model (class): a class of ML that will have eval, train, backPropagate, loss fn
+        """
+        if not hasattr(model, "name"):
+            print(f"class {model} doesn't contain attribute name.")
+            exit(0)
+            return
+        recorder = Recorder(model.name)
+        self.models[model.name] = {"model": model, "recorder": recorder}
     
-    @abstractmethod
+    def setModel(self, modelName):
+        """set model to be used for eval and train
+
+        Args:
+            modelName (str): name of model to be used. it should be present in added models. 
+        """
+        if self.models.get(modelName):
+            self.currentModel = self.models[modelName]["model"]
+            self.recorder = self.models[modelName]["recorder"]
+    
     def getModel(self):
         """ returns model that will be used for training and testing """
-        pass
-
-    def setRecorder(self, recorder:Recorder):
-        """ Sets the recorder. This will be used for Recording all the steps and detials in database. """
-        self.recorder = recorder
+        return self.currentModel
 
     def setTrack(self, track:List[List[float]]):
         """Setting track coordniates for the session 
@@ -32,6 +54,11 @@ class ModelBase:
             (x,z) => (x,y)
         """
         self.track = track
+        for model in self.models:
+            self.models[model]["model"].track = track
+
+    def sessionEnd(self, sessionNum:int):
+        
 
     def eval(self, inputDataFromUnity:str, isTraining:bool=False) -> dict:
         """This is the function that will be called on each step to evaluate what to do. 
@@ -52,13 +79,13 @@ class ModelBase:
         else:
             action = self.testEval(inputData)
             reward = self.rewardFn(action, inputData)
+        print(f"Action: {action}")
         self.recorder.record(formattedInputData, action, reward, self.session)
         return self.formatAction(action)
-    
-    @abstractmethod        
+          
     def trainEval(self, inputData) -> List[List[float]]:
         """
-        This will be called for each step in training.
+        This will be called for each step in training. it will call trainEval function of current model
 
         Args:
             inputData (Returned from PreProcess): This will contain same object returned from preProcess. If not set by default it will get Params. 
@@ -78,12 +105,11 @@ class ModelBase:
                 [0.6, -0.1] #Agent 2: 0.6 forward and 0.1 towards Left 
             ]
         """
-        pass
+        return self.currentModel.trainEval(inputData)
     
-    @abstractmethod
     def testEval(self, inputData):
         """
-        This will be called for each step in testing/Race.
+        This will be called for each step in testing/Race. It will call testEval of current model
 
         Args:
             inputData (Returned from PreProcess): This will contain same object returned from preProcess. If not set by default it will get Params. 
@@ -99,11 +125,10 @@ class ModelBase:
                 [0.6, -0.1] #Agent 2: 0.6 forward and 0.1 towards Left 
             ]
         """
-        pass
+        return self.currentModel.testEval(inputData)
     
-    @abstractmethod
     def rewardFn(self, action:List[List[float]], inputData) -> List[float]:
-        """It will be called on each step. you can define how to reward your Agent based on its input and action.
+        """It will be called on each step. you can define how to reward your Agent based on its input and action. it will call reward function on current model
 
         Args:
             action (List[List[float]]): It will be a 2D List. [[0.1,0.2], [0.3,-0.1]] 
@@ -112,9 +137,8 @@ class ModelBase:
         Returns:
             List[float]: Rewards for each Agent.
         """
-        return [0 for i in inputData]  
+        return self.currentModel.rewardFn(action, inputData)
     
-    @abstractmethod
     def backprop(self, action, inputData):
         """This will be called while training after every step this can be used to evaluate your step and adjust the model.
 
@@ -122,8 +146,7 @@ class ModelBase:
             action (List[List[float]]): It will be a 2D List. [[0.1,0.2], [0.3,-0.1]] 
             inputData (Params|Object): It would be same input data as provided in trainEval/TestEval.
         """
-        pass
-    
+        return self.currentModel.backprop(action, inputData)
     
     def preProcess(self, inputData:Params):
         """Incase you want to preprocess your inputs.
@@ -134,6 +157,8 @@ class ModelBase:
         Returns:
             Processed Data. Default is Params.
         """
+        if hasattr(self.currentModel, "preProcess"):
+            return self.currentModel.preProcess(inputData)
         return inputData
     
     def formatInput(self, unprocessedInput:str) -> Params:
@@ -152,39 +177,89 @@ class ModelBase:
     def formatAction(self, action:np.ndarray):
         return {"actions": list(map(lambda x: {"x":x[0], "y":x[1]}, action))}
 
-class RandomModel(ModelBase):
-    def __init__(self, seed:int=0):
-        super().__init__()
-        
-    def clamp(self, n, smallest, largest): 
-        return max(smallest, min(n, largest))
-    
-    def scale(self, n, smallest, largest, newSmallest, newLargest):
-        return n* (newLargest - newSmallest)/( largest - smallest )
+# TODO: make a NN model 
 
+
+
+class ModelBase:
+    def __init__(self):
+        pass
     
-    def trainEval(self, inputData):
-        return np.clip(np.random.rand(len(inputData),2) * 5 -2, -1,1)
-    
-    
+    @abstractmethod
+    def preProcess(self, inputData:Params):
+        """Incase you want to preprocess your inputs.
+
+        Args:
+            inputData (Params): This is data received from Unity
+
+        Returns:
+            Processed Data. Default is Params.
+        """
+        
+    def trainEval(self, inputData) -> List[List[float]]:
+        """
+        This will be called for each step in training. it will call trainEval function of current model
+
+        Args:
+            inputData (Returned from PreProcess): This will contain same object returned from preProcess. If not set by default it will get Params. 
+            
+        Returns:
+            List[List[float]]: It should return a list of actions need to be taken by Agent. 
+            
+        Note:
+            Range should be [-1,1] in both axis. 
+            x: [-1, 1] -> [Backward, Forward]
+            y: [-1, 1] -> [Left, Right]
+
+        Example:
+            For eg: For 2 agents, 
+            [
+                [0.5, 0.2], #Agent 1: 0.5 forward and 0.2 towards Right 
+                [0.6, -0.1] #Agent 2: 0.6 forward and 0.1 towards Left 
+            ]
+        """
+        Exception(f"Train Eval (trainEval) function not delcared for {self.name}")
     
     def testEval(self, inputData):
-        res = []
-        for carInputData in inputData:
-            x = carInputData["x"]
-            y = carInputData["y"]
-            nextpointId = (carInputData["closest_waypoints"][0] + 2) % len(self.track)
-            temp = self.track[nextpointId]
-            nextpoint = [temp[0], temp[2]]
-            
-            dy = nextpoint[1]-y
-            dx = nextpoint[0]-x
-            
-            angle = self.clamp(math.degrees(math.atan(-dy/dx)), -30, 30)
-            angleScaled = self.scale(angle, -30, 30, -1, 1)
-            
-            magnitude = self.clamp(math.sqrt(dx **2 + dy** 2), -5, 5)
-            res.append([angleScaled, magnitude])
-        return res
+        """
+        This will be called for each step in testing/Race. It will call testEval of current model
 
-# TODO: make a NN model 
+        Args:
+            inputData (Returned from PreProcess): This will contain same object returned from preProcess. If not set by default it will get Params. 
+            
+        Returns:
+            List[List]: It should return a list of actions need to be taken by Agent. 
+            Range should be [-1,1] in both axis. 
+            x: [-1, 1] -> [Backward, Forward]
+            y: [-1, 1] -> [Left, Right]
+            For eg: For 2 agents, 
+            [
+                [0.5, 0.2], #Agent 1: 0.5 forward and 0.2 towards Right 
+                [0.6, -0.1] #Agent 2: 0.6 forward and 0.1 towards Left 
+            ]
+        """
+        Exception(f"Test Eval (testEval) function not delcared for {self.name}")
+
+    
+    def rewardFn(self, action:List[List[float]], inputData) -> List[float]:
+        """It will be called on each step. you can define how to reward your Agent based on its input and action. it will call reward function on current model
+
+        Args:
+            action (List[List[float]]): It will be a 2D List. [[0.1,0.2], [0.3,-0.1]] 
+            inputData (Params|Object): It would be same input data as provided in trainEval/TestEval.
+
+        Returns:
+            List[float]: Rewards for each Agent.
+        """
+        Exception(f"reward function not delcared for {self.name}")
+    
+    def backprop(self, action, inputData):
+        """This will be called while training after every step this can be used to evaluate your step and adjust the model.
+
+        Args:
+            action (List[List[float]]): It will be a 2D List. [[0.1,0.2], [0.3,-0.1]] 
+            inputData (Params|Object): It would be same input data as provided in trainEval/TestEval.
+        """
+        Exception(f"backprop function not delcared for {self.name}")
+
+    

@@ -5,15 +5,14 @@ from fastapi import APIRouter, WebSocket
 from Constants import COMMAND, ACK
 import os
 import numpy as np
-from Model import ModelBase
+from Model import ModelInterface
 from Recorder import Recorder
 
 
 class Routes:
-    def __init__(self, model:ModelBase):
+    def __init__(self, model:ModelInterface):
         self.model = model
-        self.recorder = Recorder()
-        self.model.setRecorder(self.recorder)
+        self.recorder = model.recorder
         self.communicationRoutes = APIRouter(prefix="/api/v1", tags=["Communication"])
         self.communicationRoutes.add_api_route("/", self.hello, methods=["GET"])
         self.communicationRoutes.add_api_websocket_route("/ws", self.websocket_endpoint)

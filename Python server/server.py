@@ -1,16 +1,57 @@
-from fastapi import FastAPI, WebSocket
 import numpy as np
-import json
-import random
-from enum import Enum 
-import os
 from Interface import Interface
-from Model import RandomModel
+from Model import ModelInterface, ModelBase
+import math
 
-# TODO: Create an interface
+class RandomModel(ModelBase):
+    def __init__(self, seed:int=0):
+        super().__init__()
+        self.name = "rand"
+        
+    def clamp(self, n, smallest, largest): 
+        return max(smallest, min(n, largest))
+    
+    def scale(self, n, smallest, largest, newSmallest, newLargest):
+        return n* (newLargest - newSmallest)/( largest - smallest )
+
+    def preProcess(self, inputData):
+        return inputData
+    
+    def trainEval(self, inputData):
+        return np.clip(np.random.rand(len(inputData),2) * 5 -2, -1,1)
+    
+    def testEval(self, inputData):
+        res = []
+        for carInputData in inputData:
+            x = carInputData["x"]
+            y = carInputData["y"]
+            nextpointId = (carInputData["closest_waypoints"][0] + 2) % len(self.track)
+            temp = self.track[nextpointId]
+            nextpoint = [temp[0], temp[2]]
+            
+            dy = nextpoint[1]-y
+            dx = nextpoint[0]-x
+            
+            angle = self.clamp(math.degrees(math.atan(-dy/dx)), -30, 30)
+            angleScaled = self.scale(angle, -30, 30, -1, 1)
+            
+            magnitude = self.clamp(math.sqrt(dx **2 + dy** 2), -5, 5)
+            res.append([angleScaled, magnitude])
+        return res
+    
+    def rewardFn(self, action, inputData):
+        return [0 for i in range(len(action))]
+
+# TODO: track details not received. 
+# TODO: network error not working in testing
+randModel = RandomModel()
+
+modelInterface = ModelInterface()
+modelInterface.addModel(randModel)
+modelInterface.setModel(randModel.name)
+
 # TODO: make a ping pong point
-# TODO: Add pretty print and fancy console 
-Interface(model=RandomModel()).start()
+Interface(model=modelInterface).start()
 
 
 """app = FastAPI(title="OpenRacer API")

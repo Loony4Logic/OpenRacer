@@ -5,7 +5,7 @@ from rich.panel import Panel
 from fastapi import FastAPI
 import uvicorn
 
-from Model import ModelBase
+from Model import ModelInterface
 from Routes import Routes
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -24,7 +24,7 @@ server.add_middleware(
 )
 
 class Interface:
-    def __init__(self, model:ModelBase, host:str="localhost", port:int=8000, debug:bool = False):
+    def __init__(self, model:ModelInterface, host:str="localhost", port:int=8000, debug:bool = False):
         self.host = host
         self.port = port
         self.model = model
