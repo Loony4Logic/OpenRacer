@@ -11,7 +11,7 @@ from Model import ModelInterface
 from Routes import Routes
 from fastapi.middleware.cors import CORSMiddleware
 
-server = FastAPI(title="OpenRacer API", redoc_url="/docs", docs_url="/docs-old")
+server = FastAPI(title="OpenRacer API", redoc_url="/redocs", docs_url="/docs")
 
 origins = [
     "http://localhost:5173",

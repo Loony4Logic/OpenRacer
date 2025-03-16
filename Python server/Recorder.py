@@ -168,7 +168,7 @@ class Recorder:
     
     def runDetails(self):
         readCur = self.con.cursor()
-        res = readCur.execute("SELECT * FROM details")
+        res = readCur.execute("SELECT * FROM details order by rowid desc LIMIT 1")
         return res.fetchone()
     # TODO: Seperate tables based on data to make it more space efficient
     

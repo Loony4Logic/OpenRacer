@@ -6,11 +6,11 @@ export function DetailsCard({details}){
     
     return(
         <>
-        <Typography level="h3">Details: </Typography>
+        <Typography level="h3">Last run details: </Typography>
             Track: {details.track} <br />
             Batch size: {details.batchSize} <br />
-            session Time: {details.sessionTime} Sec <br />
-            Sessions: {details.sessions} <br />
+            Session Time: {details.sessionTime} Sec <br />
+            Sessions\lap: {details.sessions} <br />
         </>
     );
 }
