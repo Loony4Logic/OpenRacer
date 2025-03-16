@@ -1,4 +1,6 @@
+import os
 from typing import List
+from fastapi.staticfiles import StaticFiles
 from rich import print as rPrint
 from rich.panel import Panel
 
@@ -31,7 +33,10 @@ class Interface:
         self.url = f"http://{host}:{port}"
         self.router = Routes(model=model)
         server.debug = debug
+        server.mount("/assets", StaticFiles(directory=os.path.join(os.getcwd(), "frontend", "assets")))
         server.include_router(self.router.communicationRoutes)
+        server.include_router(self.router.dashboard)
+        
         
     def start(self):
         """ 

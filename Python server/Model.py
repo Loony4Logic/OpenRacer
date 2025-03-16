@@ -2,6 +2,7 @@ from abc import abstractmethod
 import json
 import math
 import os
+import pickle
 import numpy as np
 from typing import List
 from Recorder import Recorder
@@ -17,6 +18,7 @@ class ModelInterface:
         self.models = dict()
         self.currentModel = None
         self.recorder: Recorder = None
+        self.currentPath: str = None
         
     def addModel(self, model):
         """add ML model with a name atteibute. model.name should be a non empty string.
@@ -40,6 +42,9 @@ class ModelInterface:
         if self.models.get(modelName):
             self.currentModel = self.models[modelName]["model"]
             self.recorder = self.models[modelName]["recorder"]
+            self.currentPath = os.path.join(os.getcwd(), self.currentModel.name, "model")
+            self.currentFile = os.path.join(self.currentPath, f"{self.currentModel.name}.pkl")
+            os.makedirs(self.currentPath, exist_ok=True)
     
     def getModel(self):
         """ returns model that will be used for training and testing """
@@ -58,6 +63,18 @@ class ModelInterface:
             self.models[model]["model"].track = track
 
     def sessionEnd(self, sessionNum:int):
+        """called after every epoc end to save model. for more control you can add save function to model class and it will be called and interface will not save it.  
+
+        Args:
+            sessionNum (int): number of epoch ended 
+        """
+        print(f"Session {sessionNum} ended. Saving model checkpoint")
+        if getattr(self.currentModel, "save"):
+            self.currentModel.save(sessionNum)
+        else:
+            self.currentFile = os.path.join(self.currentPath, f"{self.currentModel.name}-{self.session}.pkl")
+            pickle.dump(self.currentModel, open(self.currentFile, 'wb'))
+        self.session = sessionNum+1
         
 
     def eval(self, inputDataFromUnity:str, isTraining:bool=False) -> dict:
@@ -76,11 +93,11 @@ class ModelInterface:
             action = self.trainEval(inputData)
             reward = self.rewardFn(action, inputData)
             self.backprop(action, inputData)
+            self.recorder.recordStep(formattedInputData, action, reward, self.session)
         else:
             action = self.testEval(inputData)
             reward = self.rewardFn(action, inputData)
-        print(f"Action: {action}")
-        self.recorder.record(formattedInputData, action, reward, self.session)
+            self.recorder.recordRaceStep(formattedInputData, action, reward, self.session)
         return self.formatAction(action)
           
     def trainEval(self, inputData) -> List[List[float]]:

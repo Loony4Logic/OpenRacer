@@ -35,6 +35,30 @@ class Recorder:
         sessionTime int
     );
         """
+    createRaceTable="""
+    CREATE TABLE if not exists race(
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        all_wheels_on_track BOOLEAN CHECK(all_wheels_on_track IN(0, 1)),
+        x float,
+        y float,
+        closest_waypoint1 int,
+        closest_waypoint2 int,
+        distance_from_center float,
+        is_crashed BOOLEAN CHECK(is_crashed IN(0, 1)),
+        is_left_of_center BOOLEAN CHECK(is_left_of_center IN(0, 1)),
+        is_reversed BOOLEAN CHECK(is_reversed IN(0, 1)),
+        progress float,
+        speed float,
+        steering_angle float,
+        steps int,
+        track_length float,
+        track_width float,
+        actionX float, 
+        actionY float,
+        reward float, 
+        agentId int,
+        lap int);
+    """
     def __init__(self, modelName:str):
         """setup recorder for a mode and start connection for same. 
 
@@ -51,7 +75,7 @@ class Recorder:
         else:
             dbName = f"{modelName}.db"
         
-        dirPath = os.path.join(os.getcwd(), "db", modelName)
+        dirPath = os.path.join(os.getcwd(), modelName, "db")
         dbPath = os.path.join(dirPath, dbName)
         os.makedirs(dirPath, exist_ok=True)
         
@@ -62,14 +86,15 @@ class Recorder:
         self.cur = self.con.cursor()
         self.ReadCur = self.con.cursor()
         
-        if debug or self.con:
+        if debug:
             return
         print("Creating table")
         self.cur.execute(self.createInputTable)
         self.cur.execute(self.createDetailsTable)
+        self.cur.execute(self.createRaceTable)
 
         
-    def record(self, formatedInput, action, reward, session):
+    def recordStep(self, formatedInput, action, reward, session):
         data = []
         for agentId in range(len(formatedInput)):
             values = [datetime.datetime.now()]
@@ -88,6 +113,27 @@ class Recorder:
             values.append(session)
             data.append(values) 
         self.cur.executemany("INSERT INTO step VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", data)
+        self.con.commit()
+    
+    def recordRaceStep(self, formatedInput, action, reward, session):
+        data = []
+        for agentId in range(len(formatedInput)):
+            values = [datetime.datetime.now()]
+            for i in formatedInput[agentId].values():
+                d = i
+                if type(d) == bool: 
+                    d = 1 if d else 0
+                elif type(d) == list:
+                    values.append(d[0])
+                    d = d[1]
+                values.append(d)
+            values.append(action[agentId][0])
+            values.append(action[agentId][1])
+            values.append(reward[agentId])
+            values.append(agentId)
+            values.append(session)
+            data.append(values) 
+        self.cur.executemany("INSERT INTO race VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", data)
         self.con.commit()
         
     def details(self, sessionCount, agentCount, trackName, sessionTime):
@@ -125,3 +171,8 @@ class Recorder:
         res = readCur.execute("SELECT * FROM details")
         return res.fetchone()
     # TODO: Seperate tables based on data to make it more space efficient
+    
+    def raceDetails(self):
+        readCur = self.con.cursor()
+        res = readCur.execute("SELECT progress, reward, speed, lap, timestamp from race")
+        return res.fetchall()

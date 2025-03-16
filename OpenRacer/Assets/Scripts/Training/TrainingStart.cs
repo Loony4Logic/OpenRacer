@@ -1,9 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEditorInternal;
 using UnityEngine;
 using TMPro;
-using UnityEditor.MemoryProfiler;
 using System;
 
 public class TrainingStart : MonoBehaviour
@@ -75,7 +71,6 @@ public class TrainingStart : MonoBehaviour
             return;
         }
 
-        trainingMonitor.setTrainingDetails(trackName, batchSize, epoch, sessionTime);
 
         try
         {
@@ -89,6 +84,7 @@ public class TrainingStart : MonoBehaviour
             carManager.Setup(startPoint + new Vector3(0, 2f, 0), nextPoint - startPoint);
             carManager.centerLine = trackGenerator.centerLine;
             _UIUtility.setUI(UIUtility.UINames.TrainingData);
+            trainingMonitor.setTrainingDetails(trackName, batchSize, epoch, sessionTime);
         }
         catch(Exception e)
         {

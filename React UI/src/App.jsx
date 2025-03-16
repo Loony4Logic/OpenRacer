@@ -7,6 +7,7 @@ import Skeleton from "@mui/joy/Skeleton";
 import { LineChart } from "@mui/x-charts/LineChart";
 import Navbar from "./NavBar";
 import { PerformanceChart } from "./PerformanceChart";
+import { RaceDetailsChart } from "./RaceDetails";
 import { ComparisionChart } from "./ComparisionChart";
 import { DataTable } from "./DataTable";
 import { DetailsCard } from "./DetailsCard";
@@ -58,6 +59,10 @@ function App() {
         <Card>
           <ComparisionChart agentCount={details.batchSize} sessionCount={details.sessions} />
         </Card>
+        <Card>
+          <RaceDetailsChart agentCount={details.batchSize} sessionCount={details.sessions} />
+        </Card>
+        
         {/* <Card>
           <DataTable/>
         </Card> */}

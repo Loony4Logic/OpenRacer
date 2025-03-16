@@ -2,6 +2,7 @@ import json
 import ast
 from typing import List
 from fastapi import APIRouter, WebSocket
+from fastapi.responses import FileResponse
 from Constants import COMMAND, ACK
 import os
 import numpy as np
@@ -13,6 +14,8 @@ class Routes:
     def __init__(self, model:ModelInterface):
         self.model = model
         self.recorder = model.recorder
+        self.dashboard = APIRouter(prefix="", tags=["UI"])
+        self.dashboard.add_route("/", self.ui, methods=["GET"])
         self.communicationRoutes = APIRouter(prefix="/api/v1", tags=["Communication"])
         self.communicationRoutes.add_api_route("/", self.hello, methods=["GET"])
         self.communicationRoutes.add_api_websocket_route("/ws", self.websocket_endpoint)
@@ -23,7 +26,13 @@ class Routes:
         self.communicationRoutes.add_api_route("/getProgressChartData", self.getProgressChartData, methods=["GET"])
         self.communicationRoutes.add_api_route("/getChartData/{attribute}/{agentId}/{session}", self.getChartData, methods=["GET"])
         self.communicationRoutes.add_api_route("/getRunDetails", self.getRunDetails, methods=["GET"])
+        self.communicationRoutes.add_api_route("/getRaceDetails", self.getRaceDetails, methods=["GET"])
         
+    def ui(self, _):
+        """ Sends build index.html from react. """
+        print(_)
+        return FileResponse(os.path.join(os.getcwd(), "frontend", "index.html"))
+    
     def hello(self):
         """Respond with hello. could be use for testing"""
         return {"data": "hello"}
@@ -80,7 +89,7 @@ class Routes:
         
         elif command == COMMAND.Epoch:
             print(f"Completed Epoch{value}")
-            self.model.session = int(value)+1
+            self.model.sessionEnd(int(value))
             return ACK
         
         elif command == COMMAND.Eval:
@@ -121,3 +130,6 @@ class Routes:
     
     def getRunDetails(self):
         return self.recorder.runDetails()
+    
+    def getRaceDetails(self):
+        return self.recorder.raceDetails()

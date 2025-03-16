@@ -71,12 +71,15 @@ public class TestingStart : MonoBehaviour
         }
         try
         {
+            Debug.Log("Setting up Track......");
             // Generating Track from Track name
             Track trackVert = await interactionManager.GetTrackVerts(trackName);
             TrackGenerator trackGenerator = track.GetComponent<TrackGenerator>();
             trackGenerator.generate(trackVert.track);
             Debug.Log(trackGenerator.centerLine.ToCommaSeparatedString());
             await interactionManager.sendTrackVerts(trackGenerator.centerLine); // Sending back the center line after scale 
+
+            Debug.Log("Setting up CarManager......");
 
             // initialising base info to start testing/Eval
             Vector3 startPoint = trackGenerator.centerLine[0];

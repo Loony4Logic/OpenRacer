@@ -114,14 +114,14 @@ export function DataControl({
         <Grid xs>
           <Card variant="soft" width="50vw">
             <Typography fontWeight="md" textColor="primary.700">
-              Comman settings
+            common settings
             </Typography>
             <Grid container spacing={2}>
               <Grid xs>
                 Step:
                 <Slider
                   style={{ width: "100%", display: "block" }}
-                  marks={false}
+                  marks={[{value:1, label: 1}, {value:10, label:10}, {value:25, label:25}]}
                   valueLabelDisplay="auto"
                   variant="solid"
                   defaultValue={10}
