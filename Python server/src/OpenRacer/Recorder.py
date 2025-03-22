@@ -1,7 +1,7 @@
 import datetime
 import os
 import sqlite3
-import uuid
+
 
 class Recorder:
     createInputTable = """

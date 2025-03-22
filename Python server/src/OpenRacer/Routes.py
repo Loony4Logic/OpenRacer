@@ -3,12 +3,12 @@ import ast
 from typing import List
 from fastapi import APIRouter, WebSocket
 from fastapi.responses import FileResponse
-from Constants import COMMAND, ACK
 import os
 import numpy as np
-from Model import ModelInterface
-from Recorder import Recorder
 
+from OpenRacer.Constants import COMMAND, ACK
+from OpenRacer.Model import ModelInterface
+from OpenRacer.Util import loadFile
 
 class Routes:
     def __init__(self, model:ModelInterface):
@@ -30,8 +30,7 @@ class Routes:
         
     def ui(self, _):
         """ Sends build index.html from react. """
-        print(_)
-        return FileResponse(os.path.join(os.getcwd(), "frontend", "index.html"))
+        return FileResponse(os.path.join(os.path.dirname(__file__), "frontend", "index.html"))
     
     def hello(self):
         """Respond with hello. could be use for testing"""
@@ -73,10 +72,13 @@ class Routes:
         command, value = self.getCommand(signal)
         if command == COMMAND.Track:
             track_name = value
-            if not os.path.isfile(f"{track_name}.npy"):
-                print("file not find")
-                return np.load("albert.npy")
-            _track = np.load(f"{track_name}.npy")
+            filePath = os.path.join(os.getcwd(), f"{track_name}.npy")
+            _track = None
+            if not os.path.isfile(filePath):
+                print(f"file not find at: {filePath}")
+                _track = np.load(os.path.join(os.path.dirname(__file__), "albert.npy"))
+            else:
+                _track = np.load(filePath)
             trackVert = [{"x":point[0], "y": 0, "z":point[1]} for point in _track[:-1]]
             track = trackVert
             return  {"track": trackVert}

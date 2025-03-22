@@ -1,6 +1,6 @@
 import numpy as np
-from Interface import Interface
-from Model import ModelInterface, ModelBase
+from OpenRacer.Interface import Interface
+from OpenRacer.Model import ModelInterface, ModelBase
 import math
 
 class RandomModel(ModelBase):

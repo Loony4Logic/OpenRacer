@@ -5,11 +5,12 @@ from rich import print as rPrint
 from rich.panel import Panel
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
-from Model import ModelInterface
-from Routes import Routes
-from fastapi.middleware.cors import CORSMiddleware
+from OpenRacer.Model import ModelInterface
+from OpenRacer.Routes import Routes
+from OpenRacer.Util import loadFile
 
 server = FastAPI(title="OpenRacer API", redoc_url="/redocs", docs_url="/docs")
 
@@ -33,7 +34,7 @@ class Interface:
         self.url = f"http://{host}:{port}"
         self.router = Routes(model=model)
         server.debug = debug
-        server.mount("/assets", StaticFiles(directory=os.path.join(os.getcwd(), "frontend", "assets")))
+        server.mount("/assets", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "frontend", "assets")))
         server.include_router(self.router.communicationRoutes)
         server.include_router(self.router.dashboard)
         
@@ -45,7 +46,7 @@ class Interface:
         Also creates sqlite db for each start.
         """
         self.printStart(intro=["Welcome to OperRacer", f"[link={self.url}]Home Page: {self.url}[/link]"])
-        uvicorn.run("Interface:server", host=self.host, port=self.port)
+        uvicorn.run("OpenRacer.Interface:server", host=self.host, port=self.port)
         
     def printStart(self, intro:List[str]=["Welcome to OperRacer"], padding:int = 5):
         """

@@ -1,0 +1,25 @@
+Metadata-Version: 2.1
+Name: OpenRacer
+Version: 0.0.1
+Summary: Package to connect with OpenRacer application.
+Author-email: Hitansh Doshi <hkd159@gmail.com>
+Project-URL: Issues, https://github.com/Loony4Logic/OpenRacer/issues
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Web Environment
+Classifier: Framework :: FastAPI
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Education
+Classifier: Intended Audience :: Science/Research
+Classifier: Natural Language :: English
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Classifier: Topic :: Games/Entertainment :: Simulation
+Requires-Python: >=3.8
+License-File: LICENSE
+
+Python server for OpenRacer application.
+
+This Package will be used to connect unity 3d engine with python for AI inputs.
+
+will update docs and readme. after Testing. 

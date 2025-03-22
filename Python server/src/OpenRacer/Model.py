@@ -1,13 +1,12 @@
 from abc import abstractmethod
 import json
-import math
 import os
 import pickle
 import numpy as np
 from typing import List
-from Recorder import Recorder
-from datatypes import Params
-import time
+
+from OpenRacer.Recorder import Recorder
+from OpenRacer.datatypes import Params
 
 class ModelInterface:
     def __init__(self):
