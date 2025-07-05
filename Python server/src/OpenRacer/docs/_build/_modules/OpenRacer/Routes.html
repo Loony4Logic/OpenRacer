@@ -1,0 +1,239 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenRacer.Routes &#8212; OpenRacer 0.0.3 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for OpenRacer.Routes</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">ast</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">fastapi</span> <span class="kn">import</span> <span class="n">APIRouter</span><span class="p">,</span> <span class="n">WebSocket</span>
+<span class="kn">from</span> <span class="nn">fastapi.responses</span> <span class="kn">import</span> <span class="n">FileResponse</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">OpenRacer.Constants</span> <span class="kn">import</span> <span class="n">COMMAND</span><span class="p">,</span> <span class="n">ACK</span>
+<span class="kn">from</span> <span class="nn">OpenRacer.Model</span> <span class="kn">import</span> <span class="n">ModelInterface</span>
+
+<div class="viewcode-block" id="Routes"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Routes.Routes">[docs]</a><span class="k">class</span> <span class="nc">Routes</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span><span class="n">ModelInterface</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recorder</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">recorder</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dashboard</span> <span class="o">=</span> <span class="n">APIRouter</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;UI&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dashboard</span><span class="o">.</span><span class="n">add_route</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">communicationRoutes</span> <span class="o">=</span> <span class="n">APIRouter</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;/api/v1&quot;</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Communication&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">communicationRoutes</span><span class="o">.</span><span class="n">add_api_route</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hello</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">communicationRoutes</span><span class="o">.</span><span class="n">add_api_websocket_route</span><span class="p">(</span><span class="s2">&quot;/ws&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">websocket_endpoint</span><span class="p">)</span>
+        <span class="c1"># TODO: make a new router for data retrival</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">communicationRoutes</span><span class="o">.</span><span class="n">add_api_route</span><span class="p">(</span><span class="s2">&quot;/getRecords/</span><span class="si">{agentId}</span><span class="s2">/</span><span class="si">{session}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">getRecords</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">communicationRoutes</span><span class="o">.</span><span class="n">add_api_route</span><span class="p">(</span><span class="s2">&quot;/getSessionRun/</span><span class="si">{session}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">getSessionRun</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">communicationRoutes</span><span class="o">.</span><span class="n">add_api_route</span><span class="p">(</span><span class="s2">&quot;/getAgentRun/</span><span class="si">{agentId}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">getAgentRun</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">communicationRoutes</span><span class="o">.</span><span class="n">add_api_route</span><span class="p">(</span><span class="s2">&quot;/getProgressChartData&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">getProgressChartData</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">communicationRoutes</span><span class="o">.</span><span class="n">add_api_route</span><span class="p">(</span><span class="s2">&quot;/getChartData/</span><span class="si">{attribute}</span><span class="s2">/</span><span class="si">{agentId}</span><span class="s2">/</span><span class="si">{session}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">getChartData</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">communicationRoutes</span><span class="o">.</span><span class="n">add_api_route</span><span class="p">(</span><span class="s2">&quot;/getRunDetails&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">getRunDetails</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">communicationRoutes</span><span class="o">.</span><span class="n">add_api_route</span><span class="p">(</span><span class="s2">&quot;/getRaceDetails&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">getRaceDetails</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">])</span>
+        
+<div class="viewcode-block" id="Routes.ui"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Routes.Routes.ui">[docs]</a>    <span class="k">def</span> <span class="nf">ui</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Sends build index.html from react. &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">FileResponse</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s2">&quot;frontend&quot;</span><span class="p">,</span> <span class="s2">&quot;index.html&quot;</span><span class="p">))</span></div>
+    
+<div class="viewcode-block" id="Routes.hello"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Routes.Routes.hello">[docs]</a>    <span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Respond with hello. could be use for testing&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;hello&quot;</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="Routes.websocket_endpoint"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Routes.Routes.websocket_endpoint">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">websocket_endpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">websocket</span><span class="p">:</span> <span class="n">WebSocket</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This is used for communicating with Unity APP using websockets. </span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            websocket (WebSocket): Websocket client to recieve and send messages</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">await</span> <span class="n">websocket</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">signal</span> <span class="o">=</span> <span class="k">await</span> <span class="n">websocket</span><span class="o">.</span><span class="n">receive_text</span><span class="p">()</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkCommand</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+            <span class="k">await</span> <span class="n">websocket</span><span class="o">.</span><span class="n">send_text</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">res</span><span class="p">))</span></div>
+    
+<div class="viewcode-block" id="Routes.getCommand"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Routes.Routes.getCommand">[docs]</a>    <span class="k">def</span> <span class="nf">getCommand</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Seperate the signal into command and value part</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            signal (str): It should always be in format of command~value. </span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            [command:str, value:ste]: returns the command and value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">))</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">signal</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Routes.checkCommand"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Routes.Routes.checkCommand">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">checkCommand</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check message recieved from unity and process to send response</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            signal (str): it will be string receivied from unity. Structure will be &quot;command~value&quot;.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str|dict|list: based on request different types of responses are generated</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">command</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getCommand</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">command</span> <span class="o">==</span> <span class="n">COMMAND</span><span class="o">.</span><span class="n">Track</span><span class="p">:</span>
+            <span class="n">track_name</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="n">filePath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">track_name</span><span class="si">}</span><span class="s2">.npy&quot;</span><span class="p">)</span>
+            <span class="n">_track</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">filePath</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;file not find at: </span><span class="si">{</span><span class="n">filePath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">_track</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s2">&quot;albert.npy&quot;</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">_track</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filePath</span><span class="p">)</span>
+            <span class="n">trackVert</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span><span class="n">point</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span><span class="n">point</span><span class="p">[</span><span class="mi">1</span><span class="p">]}</span> <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="n">_track</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+            <span class="n">track</span> <span class="o">=</span> <span class="n">trackVert</span>
+            <span class="k">return</span>  <span class="p">{</span><span class="s2">&quot;track&quot;</span><span class="p">:</span> <span class="n">trackVert</span><span class="p">}</span>
+        
+        <span class="k">elif</span> <span class="n">command</span> <span class="o">==</span> <span class="n">COMMAND</span><span class="o">.</span><span class="n">TrackAck</span><span class="p">:</span>
+            <span class="n">track_coords_string</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="n">track</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span><span class="n">track_coords_string</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">setTrack</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">track</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">ACK</span>
+        
+        <span class="k">elif</span> <span class="n">command</span> <span class="o">==</span> <span class="n">COMMAND</span><span class="o">.</span><span class="n">Epoch</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Completed Epoch</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sessionEnd</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">ACK</span>
+        
+        <span class="k">elif</span> <span class="n">command</span> <span class="o">==</span> <span class="n">COMMAND</span><span class="o">.</span><span class="n">Eval</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">isTraining</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">output</span>
+        
+        <span class="k">elif</span> <span class="n">command</span> <span class="o">==</span> <span class="n">COMMAND</span><span class="o">.</span><span class="n">End</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Training Ended&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ACK</span>
+        
+        <span class="k">elif</span> <span class="n">command</span> <span class="o">==</span> <span class="n">COMMAND</span><span class="o">.</span><span class="n">Details</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="n">details</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">recorder</span><span class="o">.</span><span class="n">details</span><span class="p">(</span><span class="n">details</span><span class="p">[</span><span class="s2">&quot;epoch&quot;</span><span class="p">],</span> <span class="n">details</span><span class="p">[</span><span class="s2">&quot;batchSize&quot;</span><span class="p">],</span> <span class="n">details</span><span class="p">[</span><span class="s2">&quot;trackName&quot;</span><span class="p">],</span> <span class="n">details</span><span class="p">[</span><span class="s2">&quot;sessionTime&quot;</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">ACK</span>
+        
+        <span class="k">elif</span> <span class="n">command</span> <span class="o">==</span> <span class="n">COMMAND</span><span class="o">.</span><span class="n">Test</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">isTraining</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">output</span>
+
+        <span class="k">elif</span> <span class="n">command</span> <span class="o">==</span> <span class="n">COMMAND</span><span class="o">.</span><span class="n">Lap</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ACK</span></div>
+
+<div class="viewcode-block" id="Routes.getRecords"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Routes.Routes.getRecords">[docs]</a>    <span class="k">def</span> <span class="nf">getRecords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agentId</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span><span class="nb">int</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">recorder</span><span class="o">.</span><span class="n">getRecords</span><span class="p">(</span><span class="n">agentId</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="Routes.getSessionRun"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Routes.Routes.getSessionRun">[docs]</a>    <span class="k">def</span> <span class="nf">getSessionRun</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span><span class="nb">int</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">recorder</span><span class="o">.</span><span class="n">getSessionRun</span><span class="p">(</span><span class="n">session</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Routes.getAgentRun"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Routes.Routes.getAgentRun">[docs]</a>    <span class="k">def</span> <span class="nf">getAgentRun</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agentId</span><span class="p">:</span><span class="nb">int</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">recorder</span><span class="o">.</span><span class="n">getAgentRun</span><span class="p">(</span><span class="n">agentId</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="Routes.getProgressChartData"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Routes.Routes.getProgressChartData">[docs]</a>    <span class="k">def</span> <span class="nf">getProgressChartData</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">recorder</span><span class="o">.</span><span class="n">getProgress</span><span class="p">()</span></div>
+        
+<div class="viewcode-block" id="Routes.getChartData"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Routes.Routes.getChartData">[docs]</a>    <span class="k">def</span> <span class="nf">getChartData</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">agentId</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span><span class="nb">int</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">recorder</span><span class="o">.</span><span class="n">getDetailsOf</span><span class="p">(</span><span class="n">attribute</span><span class="p">,</span> <span class="n">agentId</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="Routes.getRunDetails"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Routes.Routes.getRunDetails">[docs]</a>    <span class="k">def</span> <span class="nf">getRunDetails</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">recorder</span><span class="o">.</span><span class="n">runDetails</span><span class="p">()</span></div>
+    
+<div class="viewcode-block" id="Routes.getRaceDetails"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Routes.Routes.getRaceDetails">[docs]</a>    <span class="k">def</span> <span class="nf">getRaceDetails</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">recorder</span><span class="o">.</span><span class="n">raceDetails</span><span class="p">()</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">OpenRacer</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">OpenRacer</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2025, Hitansh Doshi.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.3.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

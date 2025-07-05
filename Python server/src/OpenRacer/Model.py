@@ -53,9 +53,7 @@ class ModelInterface:
         """Setting track coordniates for the session 
 
         Args:
-            track (List[Tuple[float]]): List of Tuple of coordinates. (x, y, z) 
-            Note: Coordinates are according to Unity. x, z should be used for 2Dcase.  
-            (x,z) => (x,y)
+            track (List[Tuple[float]]): List of Tuple of coordinates. (x, y, z). Coordinates are according to Unity. x, z should be used for 2Dcase. (x,z) => (x,y)
         """
         self.track = track
         for model in self.models:
@@ -69,13 +67,13 @@ class ModelInterface:
         """
         print(f"Session {sessionNum} ended. Saving model checkpoint")
         if getattr(self.currentModel, "save"):
-            self.currentModel.save(sessionNum)
+            self.currentModel.save(sessionNum, self.currentPath)
         else:
             self.currentFile = os.path.join(self.currentPath, f"{self.currentModel.name}-{self.session}.pkl")
             pickle.dump(self.currentModel, open(self.currentFile, 'wb'))
         self.session = sessionNum+1
+        self.action = None
         
-
     def eval(self, inputDataFromUnity:str, isTraining:bool=False) -> dict:
         """This is the function that will be called on each step to evaluate what to do. 
 
@@ -89,15 +87,21 @@ class ModelInterface:
         formattedInputData = self.formatInput(inputDataFromUnity)
         inputData = self.preProcess(formattedInputData)
         if isTraining:
-            action = self.trainEval(inputData)
-            reward = self.rewardFn(action, inputData)
-            self.backprop(action, inputData)
-            self.recorder.recordStep(formattedInputData, action, reward, self.session)
+            if getattr(self, "action", None) != None:
+                reward = self.rewardFn(self.action, inputData)
+                self.backprop(self.action, inputData)
+            else:
+                reward = [0 for i in range(self.agentCount)]
+            self.action = self.trainEval(inputData)
+            self.recorder.recordStep(formattedInputData, self.action, reward, self.session)
         else:
-            action = self.testEval(inputData)
-            reward = self.rewardFn(action, inputData)
-            self.recorder.recordRaceStep(formattedInputData, action, reward, self.session)
-        return self.formatAction(action)
+            if getattr(self, "action", None) != None:
+                reward = self.rewardFn(self.action, inputData)
+            else:
+                reward = [0 for i in range(self.agentCount)]
+            self.action = self.testEval(inputData)
+            self.recorder.recordRaceStep(formattedInputData, self.action, reward, self.session)
+        return self.formatAction(self.action)
           
     def trainEval(self, inputData) -> List[List[float]]:
         """
@@ -187,21 +191,17 @@ class ModelInterface:
             Params: Processed input for taking next step.
         """
         inputData = json.loads(f"[{unprocessedInput}]")
-        self.agnetCount = len(inputData)
+        self.agentCount = len(inputData)
         return inputData
     
     def formatAction(self, action:np.ndarray):
         return {"actions": list(map(lambda x: {"x":x[0], "y":x[1]}, action))}
 
-# TODO: make a NN model 
-
-
 
 class ModelBase:
     def __init__(self):
-        pass
+        self.name = "unknown"
     
-    @abstractmethod
     def preProcess(self, inputData:Params):
         """Incase you want to preprocess your inputs.
 
@@ -211,10 +211,22 @@ class ModelBase:
         Returns:
             Processed Data. Default is Params.
         """
+        return inputData
         
     def trainEval(self, inputData) -> List[List[float]]:
         """
         This will be called for each step in training. it will call trainEval function of current model
+            Note:
+                output range should be [-1,1] in both axis. 
+                x: [-1, 1] -> [Backward, Forward]
+                y: [-1, 1] -> [Left, Right]
+
+            Example output:
+                For eg: For 2 agents, 
+                [
+                    [0.5, 0.2], #Agent 1: 0.5 forward and 0.2 towards Right 
+                    [0.6, -0.1] #Agent 2: 0.6 forward and 0.1 towards Left 
+                ]
 
         Args:
             inputData (Returned from PreProcess): This will contain same object returned from preProcess. If not set by default it will get Params. 
@@ -222,41 +234,33 @@ class ModelBase:
         Returns:
             List[List[float]]: It should return a list of actions need to be taken by Agent. 
             
-        Note:
-            Range should be [-1,1] in both axis. 
-            x: [-1, 1] -> [Backward, Forward]
-            y: [-1, 1] -> [Left, Right]
-
-        Example:
-            For eg: For 2 agents, 
-            [
-                [0.5, 0.2], #Agent 1: 0.5 forward and 0.2 towards Right 
-                [0.6, -0.1] #Agent 2: 0.6 forward and 0.1 towards Left 
-            ]
         """
         Exception(f"Train Eval (trainEval) function not delcared for {self.name}")
     
     def testEval(self, inputData):
         """
         This will be called for each step in testing/Race. It will call testEval of current model
+            Note:
+                output range should be [-1,1] in both axis. 
+                x: [-1, 1] -> [Backward, Forward]
+                y: [-1, 1] -> [Left, Right]
+
+            Example output:
+                For eg: For 2 agents, 
+                [
+                    [0.5, 0.2], #Agent 1: 0.5 forward and 0.2 towards Right 
+                    [0.6, -0.1] #Agent 2: 0.6 forward and 0.1 towards Left 
+                ]
 
         Args:
             inputData (Returned from PreProcess): This will contain same object returned from preProcess. If not set by default it will get Params. 
             
         Returns:
             List[List]: It should return a list of actions need to be taken by Agent. 
-            Range should be [-1,1] in both axis. 
-            x: [-1, 1] -> [Backward, Forward]
-            y: [-1, 1] -> [Left, Right]
-            For eg: For 2 agents, 
-            [
-                [0.5, 0.2], #Agent 1: 0.5 forward and 0.2 towards Right 
-                [0.6, -0.1] #Agent 2: 0.6 forward and 0.1 towards Left 
-            ]
+                
         """
         Exception(f"Test Eval (testEval) function not delcared for {self.name}")
 
-    
     def rewardFn(self, action:List[List[float]], inputData) -> List[float]:
         """It will be called on each step. you can define how to reward your Agent based on its input and action. it will call reward function on current model
 
@@ -277,5 +281,15 @@ class ModelBase:
             inputData (Params|Object): It would be same input data as provided in trainEval/TestEval.
         """
         Exception(f"backprop function not delcared for {self.name}")
+
+    def save(self, sessionNum, dirPath):
+        """this function will be called at the end of every session to save the model. user needs to implement save functionality.
+        it can be saved on the directory path provided in the input. 
+
+        Args:
+            sessionNum (int): session number of currently ended session. 
+            dirPath (str): path to the directory created by OpenRacer module.
+        """
+        print(f"Save not implemented. Not saving model for {self.name}")
 
     

@@ -1,7 +1,8 @@
 import numpy as np
+import math
+
 from OpenRacer.Interface import Interface
 from OpenRacer.Model import ModelInterface, ModelBase
-import math
 
 class RandomModel(ModelBase):
     def __init__(self, seed:int=0):
@@ -18,7 +19,7 @@ class RandomModel(ModelBase):
         return inputData
     
     def trainEval(self, inputData):
-        return np.clip(np.random.rand(len(inputData),2) * 5 -2, -1,1)
+        return np.clip(np.random.rand(len(inputData),2) * 5 -2, -1,1).tolist()
     
     def testEval(self, inputData):
         res = []
@@ -42,15 +43,16 @@ class RandomModel(ModelBase):
     def rewardFn(self, action, inputData):
         return [0 for i in range(len(action))]
     
-    def save(self, epocNum:int):
+    def save(self, epocNum:int, dirPath):
         print(f"Saved model for epoch {epocNum}")
         return 
 
-randModel = RandomModel()
+if __name__ == '__main__':
+    randModel = RandomModel()
 
-modelInterface = ModelInterface()
-modelInterface.addModel(randModel)
-modelInterface.setModel(randModel.name)
+    modelInterface = ModelInterface()
+    modelInterface.addModel(randModel)
+    modelInterface.setModel(randModel.name)
 
-Interface(model=modelInterface).start()
+    Interface(model=modelInterface).start()
 

@@ -8,7 +8,6 @@ import numpy as np
 
 from OpenRacer.Constants import COMMAND, ACK
 from OpenRacer.Model import ModelInterface
-from OpenRacer.Util import loadFile
 
 class Routes:
     def __init__(self, model:ModelInterface):

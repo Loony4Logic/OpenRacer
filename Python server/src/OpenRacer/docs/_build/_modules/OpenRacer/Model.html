@@ -1,0 +1,372 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenRacer.Model &#8212; OpenRacer 0.0.3 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nature.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">OpenRacer 0.0.3 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">OpenRacer.Model</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for OpenRacer.Model</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+
+<span class="kn">from</span> <span class="nn">OpenRacer.Recorder</span> <span class="kn">import</span> <span class="n">Recorder</span>
+<span class="kn">from</span> <span class="nn">OpenRacer.datatypes</span> <span class="kn">import</span> <span class="n">Params</span>
+
+<div class="viewcode-block" id="ModelInterface"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Model.ModelInterface">[docs]</a><span class="k">class</span> <span class="nc">ModelInterface</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializing BaseClass for AI Model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model started&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">models</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">currentModel</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recorder</span><span class="p">:</span> <span class="n">Recorder</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">currentPath</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+        
+<div class="viewcode-block" id="ModelInterface.addModel"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Model.ModelInterface.addModel">[docs]</a>    <span class="k">def</span> <span class="nf">addModel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;add ML model with a name atteibute. model.name should be a non empty string.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            model (class): a class of ML that will have eval, train, backPropagate, loss fn</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;class </span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2"> doesn&#39;t contain attribute name.&quot;</span><span class="p">)</span>
+            <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">recorder</span> <span class="o">=</span> <span class="n">Recorder</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">model</span><span class="p">,</span> <span class="s2">&quot;recorder&quot;</span><span class="p">:</span> <span class="n">recorder</span><span class="p">}</span></div>
+    
+<div class="viewcode-block" id="ModelInterface.setModel"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Model.ModelInterface.setModel">[docs]</a>    <span class="k">def</span> <span class="nf">setModel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">modelName</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;set model to be used for eval and train</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            modelName (str): name of model to be used. it should be present in added models. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">modelName</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">currentModel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="n">modelName</span><span class="p">][</span><span class="s2">&quot;model&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">recorder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="n">modelName</span><span class="p">][</span><span class="s2">&quot;recorder&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">currentPath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">currentModel</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">currentFile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">currentPath</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">currentModel</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">.pkl&quot;</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">currentPath</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="ModelInterface.getModel"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Model.ModelInterface.getModel">[docs]</a>    <span class="k">def</span> <span class="nf">getModel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; returns model that will be used for training and testing &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">currentModel</span></div>
+
+<div class="viewcode-block" id="ModelInterface.setTrack"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Model.ModelInterface.setTrack">[docs]</a>    <span class="k">def</span> <span class="nf">setTrack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">track</span><span class="p">:</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Setting track coordniates for the session </span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            track (List[Tuple[float]]): List of Tuple of coordinates. (x, y, z). Coordinates are according to Unity. x, z should be used for 2Dcase. (x,z) =&gt; (x,y)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">track</span> <span class="o">=</span> <span class="n">track</span>
+        <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="n">model</span><span class="p">][</span><span class="s2">&quot;model&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">track</span> <span class="o">=</span> <span class="n">track</span></div>
+
+<div class="viewcode-block" id="ModelInterface.sessionEnd"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Model.ModelInterface.sessionEnd">[docs]</a>    <span class="k">def</span> <span class="nf">sessionEnd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sessionNum</span><span class="p">:</span><span class="nb">int</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;called after every epoc end to save model. for more control you can add save function to model class and it will be called and interface will not save it.  </span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            sessionNum (int): number of epoch ended </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Session </span><span class="si">{</span><span class="n">sessionNum</span><span class="si">}</span><span class="s2"> ended. Saving model checkpoint&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">currentModel</span><span class="p">,</span> <span class="s2">&quot;save&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">currentModel</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">sessionNum</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">currentPath</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">currentFile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">currentPath</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">currentModel</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="si">}</span><span class="s2">.pkl&quot;</span><span class="p">)</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">currentModel</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">currentFile</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">sessionNum</span><span class="o">+</span><span class="mi">1</span></div>
+        
+<div class="viewcode-block" id="ModelInterface.eval"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Model.ModelInterface.eval">[docs]</a>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputDataFromUnity</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">isTraining</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This is the function that will be called on each step to evaluate what to do. </span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputDataFromUnity (str): This is unformatted data from Unity.</span>
+<span class="sd">            isTraining (bool, optional): Is this a step in training. If true then It will call backpropogate. Defaults to False.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: This is action dict that contains x, y input for Car AI in Unity.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">formattedInputData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">formatInput</span><span class="p">(</span><span class="n">inputDataFromUnity</span><span class="p">)</span>
+        <span class="n">inputData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preProcess</span><span class="p">(</span><span class="n">formattedInputData</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">isTraining</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="p">:</span>
+                <span class="n">reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rewardFn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="p">,</span> <span class="n">inputData</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">backprop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="p">,</span> <span class="n">inputData</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainEval</span><span class="p">(</span><span class="n">inputData</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">recorder</span><span class="o">.</span><span class="n">recordStep</span><span class="p">(</span><span class="n">formattedInputData</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="p">:</span>
+                <span class="n">reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rewardFn</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="n">inputData</span><span class="p">)</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">testEval</span><span class="p">(</span><span class="n">inputData</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">recorder</span><span class="o">.</span><span class="n">recordRaceStep</span><span class="p">(</span><span class="n">formattedInputData</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">formatAction</span><span class="p">(</span><span class="n">action</span><span class="p">)</span></div>
+          
+<div class="viewcode-block" id="ModelInterface.trainEval"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Model.ModelInterface.trainEval">[docs]</a>    <span class="k">def</span> <span class="nf">trainEval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputData</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This will be called for each step in training. it will call trainEval function of current model</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputData (Returned from PreProcess): This will contain same object returned from preProcess. If not set by default it will get Params. </span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            List[List[float]]: It should return a list of actions need to be taken by Agent. </span>
+<span class="sd">            </span>
+<span class="sd">        Note:</span>
+<span class="sd">            Range should be [-1,1] in both axis. </span>
+<span class="sd">            x: [-1, 1] -&gt; [Backward, Forward]</span>
+<span class="sd">            y: [-1, 1] -&gt; [Left, Right]</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            For eg: For 2 agents, </span>
+<span class="sd">            [</span>
+<span class="sd">                [0.5, 0.2], #Agent 1: 0.5 forward and 0.2 towards Right </span>
+<span class="sd">                [0.6, -0.1] #Agent 2: 0.6 forward and 0.1 towards Left </span>
+<span class="sd">            ]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">currentModel</span><span class="o">.</span><span class="n">trainEval</span><span class="p">(</span><span class="n">inputData</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="ModelInterface.testEval"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Model.ModelInterface.testEval">[docs]</a>    <span class="k">def</span> <span class="nf">testEval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputData</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This will be called for each step in testing/Race. It will call testEval of current model</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputData (Returned from PreProcess): This will contain same object returned from preProcess. If not set by default it will get Params. </span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            List[List]: It should return a list of actions need to be taken by Agent. </span>
+<span class="sd">            Range should be [-1,1] in both axis. </span>
+<span class="sd">            x: [-1, 1] -&gt; [Backward, Forward]</span>
+<span class="sd">            y: [-1, 1] -&gt; [Left, Right]</span>
+<span class="sd">            For eg: For 2 agents, </span>
+<span class="sd">            [</span>
+<span class="sd">                [0.5, 0.2], #Agent 1: 0.5 forward and 0.2 towards Right </span>
+<span class="sd">                [0.6, -0.1] #Agent 2: 0.6 forward and 0.1 towards Left </span>
+<span class="sd">            ]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">currentModel</span><span class="o">.</span><span class="n">testEval</span><span class="p">(</span><span class="n">inputData</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="ModelInterface.rewardFn"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Model.ModelInterface.rewardFn">[docs]</a>    <span class="k">def</span> <span class="nf">rewardFn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span> <span class="n">inputData</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;It will be called on each step. you can define how to reward your Agent based on its input and action. it will call reward function on current model</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            action (List[List[float]]): It will be a 2D List. [[0.1,0.2], [0.3,-0.1]] </span>
+<span class="sd">            inputData (Params|Object): It would be same input data as provided in trainEval/TestEval.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[float]: Rewards for each Agent.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">currentModel</span><span class="o">.</span><span class="n">rewardFn</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="n">inputData</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="ModelInterface.backprop"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Model.ModelInterface.backprop">[docs]</a>    <span class="k">def</span> <span class="nf">backprop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">inputData</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This will be called while training after every step this can be used to evaluate your step and adjust the model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            action (List[List[float]]): It will be a 2D List. [[0.1,0.2], [0.3,-0.1]] </span>
+<span class="sd">            inputData (Params|Object): It would be same input data as provided in trainEval/TestEval.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">currentModel</span><span class="o">.</span><span class="n">backprop</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="n">inputData</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="ModelInterface.preProcess"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Model.ModelInterface.preProcess">[docs]</a>    <span class="k">def</span> <span class="nf">preProcess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputData</span><span class="p">:</span><span class="n">Params</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Incase you want to preprocess your inputs.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputData (Params): This is data received from Unity</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Processed Data. Default is Params.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">currentModel</span><span class="p">,</span> <span class="s2">&quot;preProcess&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">currentModel</span><span class="o">.</span><span class="n">preProcess</span><span class="p">(</span><span class="n">inputData</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">inputData</span></div>
+    
+<div class="viewcode-block" id="ModelInterface.formatInput"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Model.ModelInterface.formatInput">[docs]</a>    <span class="k">def</span> <span class="nf">formatInput</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unprocessedInput</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Params</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This converts data from string received from untiy to Prams </span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            unprocessedInput (str): Str message received from unity over Websocket.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Params: Processed input for taking next step.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">inputData</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">unprocessedInput</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">agnetCount</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">inputData</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">inputData</span></div>
+    
+<div class="viewcode-block" id="ModelInterface.formatAction"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Model.ModelInterface.formatAction">[docs]</a>    <span class="k">def</span> <span class="nf">formatAction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]},</span> <span class="n">action</span><span class="p">))}</span></div></div>
+
+
+<div class="viewcode-block" id="ModelBase"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Model.ModelBase">[docs]</a><span class="k">class</span> <span class="nc">ModelBase</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;unknown&quot;</span>
+    
+<div class="viewcode-block" id="ModelBase.preProcess"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Model.ModelBase.preProcess">[docs]</a>    <span class="k">def</span> <span class="nf">preProcess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputData</span><span class="p">:</span><span class="n">Params</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Incase you want to preprocess your inputs.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputData (Params): This is data received from Unity</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Processed Data. Default is Params.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">inputData</span></div>
+        
+<div class="viewcode-block" id="ModelBase.trainEval"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Model.ModelBase.trainEval">[docs]</a>    <span class="k">def</span> <span class="nf">trainEval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputData</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This will be called for each step in training. it will call trainEval function of current model</span>
+<span class="sd">            Note:</span>
+<span class="sd">                output range should be [-1,1] in both axis. </span>
+<span class="sd">                x: [-1, 1] -&gt; [Backward, Forward]</span>
+<span class="sd">                y: [-1, 1] -&gt; [Left, Right]</span>
+
+<span class="sd">            Example output:</span>
+<span class="sd">                For eg: For 2 agents, </span>
+<span class="sd">                [</span>
+<span class="sd">                    [0.5, 0.2], #Agent 1: 0.5 forward and 0.2 towards Right </span>
+<span class="sd">                    [0.6, -0.1] #Agent 2: 0.6 forward and 0.1 towards Left </span>
+<span class="sd">                ]</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputData (Returned from PreProcess): This will contain same object returned from preProcess. If not set by default it will get Params. </span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            List[List[float]]: It should return a list of actions need to be taken by Agent. </span>
+<span class="sd">            </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Train Eval (trainEval) function not delcared for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="ModelBase.testEval"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Model.ModelBase.testEval">[docs]</a>    <span class="k">def</span> <span class="nf">testEval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputData</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This will be called for each step in testing/Race. It will call testEval of current model</span>
+<span class="sd">            Note:</span>
+<span class="sd">                output range should be [-1,1] in both axis. </span>
+<span class="sd">                x: [-1, 1] -&gt; [Backward, Forward]</span>
+<span class="sd">                y: [-1, 1] -&gt; [Left, Right]</span>
+
+<span class="sd">            Example output:</span>
+<span class="sd">                For eg: For 2 agents, </span>
+<span class="sd">                [</span>
+<span class="sd">                    [0.5, 0.2], #Agent 1: 0.5 forward and 0.2 towards Right </span>
+<span class="sd">                    [0.6, -0.1] #Agent 2: 0.6 forward and 0.1 towards Left </span>
+<span class="sd">                ]</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputData (Returned from PreProcess): This will contain same object returned from preProcess. If not set by default it will get Params. </span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            List[List]: It should return a list of actions need to be taken by Agent. </span>
+<span class="sd">                </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Test Eval (testEval) function not delcared for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ModelBase.rewardFn"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Model.ModelBase.rewardFn">[docs]</a>    <span class="k">def</span> <span class="nf">rewardFn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span> <span class="n">inputData</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;It will be called on each step. you can define how to reward your Agent based on its input and action. it will call reward function on current model</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            action (List[List[float]]): It will be a 2D List. [[0.1,0.2], [0.3,-0.1]] </span>
+<span class="sd">            inputData (Params|Object): It would be same input data as provided in trainEval/TestEval.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[float]: Rewards for each Agent.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;reward function not delcared for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="ModelBase.backprop"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Model.ModelBase.backprop">[docs]</a>    <span class="k">def</span> <span class="nf">backprop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">inputData</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This will be called while training after every step this can be used to evaluate your step and adjust the model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            action (List[List[float]]): It will be a 2D List. [[0.1,0.2], [0.3,-0.1]] </span>
+<span class="sd">            inputData (Params|Object): It would be same input data as provided in trainEval/TestEval.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;backprop function not delcared for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ModelBase.save"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.Model.ModelBase.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sessionNum</span><span class="p">,</span> <span class="n">dirPath</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;this function will be called at the end of every session to save the model. user needs to implement save functionality.</span>
+<span class="sd">        it can be saved on the directory path provided in the input. </span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            sessionNum (int): session number of currently ended session. </span>
+<span class="sd">            dirPath (str): path to the directory created by OpenRacer module.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Save not implemented. Not saving model for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div></div>
+
+    
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">OpenRacer 0.0.3 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">OpenRacer.Model</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2025, Hitansh Doshi.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    </div>
+  </body>
+</html>

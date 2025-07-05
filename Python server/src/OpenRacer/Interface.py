@@ -10,7 +10,6 @@ import uvicorn
 
 from OpenRacer.Model import ModelInterface
 from OpenRacer.Routes import Routes
-from OpenRacer.Util import loadFile
 
 server = FastAPI(title="OpenRacer API", redoc_url="/redocs", docs_url="/docs")
 

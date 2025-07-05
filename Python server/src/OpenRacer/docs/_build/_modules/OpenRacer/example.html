@@ -1,0 +1,140 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenRacer.example &#8212; OpenRacer 0.0.3 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nature.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">OpenRacer 0.0.3 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">OpenRacer.example</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for OpenRacer.example</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="kn">from</span> <span class="nn">OpenRacer.Interface</span> <span class="kn">import</span> <span class="n">Interface</span>
+<span class="kn">from</span> <span class="nn">OpenRacer.Model</span> <span class="kn">import</span> <span class="n">ModelInterface</span><span class="p">,</span> <span class="n">ModelBase</span>
+
+<div class="viewcode-block" id="RandomModel"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.example.RandomModel">[docs]</a><span class="k">class</span> <span class="nc">RandomModel</span><span class="p">(</span><span class="n">ModelBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;rand&quot;</span>
+        
+<div class="viewcode-block" id="RandomModel.clamp"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.example.RandomModel.clamp">[docs]</a>    <span class="k">def</span> <span class="nf">clamp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">smallest</span><span class="p">,</span> <span class="n">largest</span><span class="p">):</span> 
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">smallest</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">largest</span><span class="p">))</span></div>
+    
+<div class="viewcode-block" id="RandomModel.scale"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.example.RandomModel.scale">[docs]</a>    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">smallest</span><span class="p">,</span> <span class="n">largest</span><span class="p">,</span> <span class="n">newSmallest</span><span class="p">,</span> <span class="n">newLargest</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">n</span><span class="o">*</span> <span class="p">(</span><span class="n">newLargest</span> <span class="o">-</span> <span class="n">newSmallest</span><span class="p">)</span><span class="o">/</span><span class="p">(</span> <span class="n">largest</span> <span class="o">-</span> <span class="n">smallest</span> <span class="p">)</span></div>
+
+<div class="viewcode-block" id="RandomModel.preProcess"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.example.RandomModel.preProcess">[docs]</a>    <span class="k">def</span> <span class="nf">preProcess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputData</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">inputData</span></div>
+    
+<div class="viewcode-block" id="RandomModel.trainEval"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.example.RandomModel.trainEval">[docs]</a>    <span class="k">def</span> <span class="nf">trainEval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputData</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">inputData</span><span class="p">),</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mi">5</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="RandomModel.testEval"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.example.RandomModel.testEval">[docs]</a>    <span class="k">def</span> <span class="nf">testEval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputData</span><span class="p">):</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">carInputData</span> <span class="ow">in</span> <span class="n">inputData</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">carInputData</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">carInputData</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span>
+            <span class="n">nextpointId</span> <span class="o">=</span> <span class="p">(</span><span class="n">carInputData</span><span class="p">[</span><span class="s2">&quot;closest_waypoints&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">0</span><span class="p">)</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">track</span><span class="p">)</span>
+            <span class="n">temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">track</span><span class="p">[</span><span class="n">nextpointId</span><span class="p">]</span>
+            <span class="n">nextpoint</span> <span class="o">=</span> <span class="p">[</span><span class="n">temp</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">temp</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
+            
+            <span class="n">dy</span> <span class="o">=</span> <span class="n">nextpoint</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">y</span>
+            <span class="n">dx</span> <span class="o">=</span> <span class="n">nextpoint</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">x</span>
+            
+            <span class="n">angle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">atan</span><span class="p">(</span><span class="o">-</span><span class="n">dy</span><span class="o">/</span><span class="n">dx</span><span class="p">)),</span> <span class="o">-</span><span class="mi">30</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+            <span class="n">angleScaled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="o">-</span><span class="mi">30</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            
+            <span class="n">magnitude</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dx</span> <span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">dy</span><span class="o">**</span> <span class="mi">2</span><span class="p">),</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">angleScaled</span><span class="p">,</span> <span class="n">magnitude</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">res</span></div>
+    
+<div class="viewcode-block" id="RandomModel.rewardFn"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.example.RandomModel.rewardFn">[docs]</a>    <span class="k">def</span> <span class="nf">rewardFn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">inputData</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">action</span><span class="p">))]</span></div>
+    
+<div class="viewcode-block" id="RandomModel.save"><a class="viewcode-back" href="../../OpenRacer.html#OpenRacer.example.RandomModel.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epocNum</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span> <span class="n">dirPath</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saved model for epoch </span><span class="si">{</span><span class="n">epocNum</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> </div></div>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">randModel</span> <span class="o">=</span> <span class="n">RandomModel</span><span class="p">()</span>
+
+    <span class="n">modelInterface</span> <span class="o">=</span> <span class="n">ModelInterface</span><span class="p">()</span>
+    <span class="n">modelInterface</span><span class="o">.</span><span class="n">addModel</span><span class="p">(</span><span class="n">randModel</span><span class="p">)</span>
+    <span class="n">modelInterface</span><span class="o">.</span><span class="n">setModel</span><span class="p">(</span><span class="n">randModel</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="n">Interface</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">modelInterface</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">OpenRacer 0.0.3 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">OpenRacer.example</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2025, Hitansh Doshi.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    </div>
+  </body>
+</html>

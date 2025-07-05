@@ -1,6 +1,6 @@
 [project]
 name = "OpenRacer"
-version = "0.0.3"
+version = "0.6.6"
 authors = [
   { name="Hitansh Doshi", email="hkd159@gmail.com" },
 ]
