@@ -1,7 +1,7 @@
 # OpenRacer
 
 <p align="center">
-<img src="LOGO.jpg" height="250" /></center>
+<img src="Assets/LOGO.jpg" height="250" /></center>
 </p>
 
 **OpenRacer** is an open-source platform that empowers you to train machine-learning models for autonomous racing. Built with Python and powered by a Unity-based 3D environment, OpenRacer offers a dynamic and accessible way to develop and test AI models in a simulated racing environment.
@@ -23,7 +23,24 @@ OpenRacer is designed to lower the barrier to entry for autonomous racing and ma
 
 ## 📚 Getting Started
 
-### A stable version for wider use will be released soon
+### Released Version
+
+#### Setup
+1. Install Python Package
+Install the OpenRacer backend using pip:
+
+```bash 
+pip install OpenRacer
+```
+
+write your own model and run. for example refer to [example.py]("Python server/src/OpenRacer/example.py") 
+
+2. Download Unity Simulator
+
+   Download the prebuilt Unity simulator (Windows only):
+
+> Note for Linux/macOS users:
+You can build the simulator yourself from Unity project files available in the /unity/ directory of this repo. Requires Unity Editor version [insert version].
 
 
 ### Nightly Installation
