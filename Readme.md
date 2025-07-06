@@ -1,7 +1,7 @@
 # OpenRacer
 
 <p align="center">
-<img src="Assets/LOGO.jpg" height="250" /></center>
+<img src="Assets/LOGO.jpg" height="20%" /></center>
 </p>
 
 **OpenRacer** is an open-source platform that empowers you to train machine-learning models for autonomous racing. Built with Python and powered by a Unity-based 3D environment, OpenRacer offers a dynamic and accessible way to develop and test AI models in a simulated racing environment.
@@ -33,14 +33,14 @@ Install the OpenRacer backend using pip:
 pip install OpenRacer
 ```
 
-write your own model and run. for example refer to [example.py]("Python server/src/OpenRacer/example.py") 
+write your own model and run. for example refer to [example.py](https://github.com/Loony4Logic/OpenRacer/blob/main/Python%20server/src/OpenRacer/example.py) 
 
 2. Download Unity Simulator
 
    Download the prebuilt Unity simulator (Windows only):
 
 > Note for Linux/macOS users:
-You can build the simulator yourself from Unity project files available in the /unity/ directory of this repo. Requires Unity Editor version [insert version].
+You can build the simulator yourself from Unity project files available in the /unity/ directory of this repo. Requires Unity Editor version 2022.3.12f1.
 
 
 ### Nightly Installation
@@ -87,6 +87,22 @@ You can build the simulator yourself from Unity project files available in the /
    npm install
    npm run dev
    ```
+
+## 📷 Media
+
+A small demo video:
+
+[![Watch the demo](http://img.youtube.com/vi/NPS_5bbTUGE/0.jpg)](https://www.youtube.com/watch?v=NPS_5bbTUGE)
+
+
+Starting Page for the Unity Application:
+![Start Menue](https://github.com/Loony4Logic/OpenRacer/blob/main/Assets/StartMenu.png)
+
+Python Server Console:
+![Python Server Console](https://github.com/Loony4Logic/OpenRacer/blob/main/Assets/PythonServer.png)
+
+Dashboard: 
+![DashBoard](https://github.com/Loony4Logic/OpenRacer/blob/main/Assets/Dashboard.png)
 
 ## 🤝 Contributing
 
