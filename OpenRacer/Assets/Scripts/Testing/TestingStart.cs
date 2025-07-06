@@ -76,7 +76,7 @@ public class TestingStart : MonoBehaviour
             Track trackVert = await interactionManager.GetTrackVerts(trackName);
             TrackGenerator trackGenerator = track.GetComponent<TrackGenerator>();
             trackGenerator.generate(trackVert.track);
-            Debug.Log(trackGenerator.centerLine.ToCommaSeparatedString());
+            //Debug.Log(trackGenerator.centerLine.ToCommaSeparatedString());
             await interactionManager.sendTrackVerts(trackGenerator.centerLine); // Sending back the center line after scale 
 
             Debug.Log("Setting up CarManager......");

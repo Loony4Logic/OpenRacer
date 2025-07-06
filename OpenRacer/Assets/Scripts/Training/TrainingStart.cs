@@ -74,15 +74,22 @@ public class TrainingStart : MonoBehaviour
 
         try
         {
+            Debug.Log("Setting up Track......");
+            // Generating Track from Track name
             Track trackVert = await interactionManager.GetTrackVerts(trackName);
             TrackGenerator trackGenerator = track.GetComponent<TrackGenerator>();
             trackGenerator.generate(trackVert.track);
+            await interactionManager.sendTrackVerts(trackGenerator.centerLine); // Sending back the center line after scale 
+
+            // initialising base info to start testing/Eval
             Vector3 startPoint = trackGenerator.centerLine[0];
             Vector3 nextPoint = trackGenerator.centerLine[1];
             carManager.batchSize = batchSize;
             await interactionManager.sendDetails(trackName, batchSize, epoch, sessionTime);
             carManager.Setup(startPoint + new Vector3(0, 2f, 0), nextPoint - startPoint);
             carManager.centerLine = trackGenerator.centerLine;
+
+            //Setting up UI
             _UIUtility.setUI(UIUtility.UINames.TrainingData);
             trainingMonitor.setTrainingDetails(trackName, batchSize, epoch, sessionTime);
         }
